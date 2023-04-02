@@ -1,11 +1,25 @@
 {
   "name": "kanlang",
   "version": "0.1.0",
-  "description": "a generic programing language",
+  "description": "a generic programming language",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "buildGrammar": "rm -r grammar/out && mkdir -p grammar/out && nearleyc grammar/grammar.ne -o grammar/out/grammar.ts"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@jest/globals": "^29.5.0",
+    "@types/jest": "^29.4.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@types/nearley": "^2.11.2",
+    "moo": "^0.5.2",
+    "nearley": "^2.20.1"
+  }
 }
