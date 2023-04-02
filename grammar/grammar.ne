@@ -47,7 +47,7 @@ primitiveType -> "num"    {% idValue %}
                | "string" {% idValue %}
                | "bool"   {% idValue %}
 
-statement -> expression {% idValue %}
+statement -> expression %NL {% idValue %}
            | %symbolName _ "=" _ statement # assignment
            # return statement
            | "return" _ statement {% d => ({return: d[2]})%}
