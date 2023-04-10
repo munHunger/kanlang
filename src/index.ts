@@ -30,7 +30,7 @@ export class KanlangCompiler {
         }
         return line;
       })
-      .map(line => line.trim()) //Leading and trailing spaces are a pain
+      .map((line) => line.trim()) //Leading and trailing spaces are a pain
       .filter((v) => v !== "")
       .join("\n");
   }
@@ -76,6 +76,17 @@ export class KanlangCompiler {
 
   codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
+      for (let argType of node.function.signature.args) {
+        if (!frame.types.has(argType.type)) {
+          if (argType.type.alias && typeof argType.type.alias === "string") {
+            // inline definition of an alias for a primitive value
+            frame.types.add(argType.type);
+          } else
+            throw new Error(
+              `Unrecognized type ${argType.type.type} for argument ${argType.name} on function ${node.function.signature.name}`
+            );
+        }
+      }
       let newFrame: StackFrame = {
         prev: frame,
         variableMap: {},

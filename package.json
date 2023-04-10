@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "buildGrammar": "rm -r grammar/out && mkdir -p grammar/out && nearleyc grammar/grammar.ne -o grammar/out/grammar.ts"
+    "buildGrammar": "rm -r grammar/out || true && mkdir -p grammar/out && nearleyc grammar/grammar.ne -o grammar/out/grammar.ts"
   },
   "author": "",
   "license": "MIT",
