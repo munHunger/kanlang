@@ -5,7 +5,9 @@ import {
   AstNode,
   Expression,
   Fn,
+  StackFrame,
   Statement,
+  isAssignment,
   isFunction,
   isStatement,
 } from "./types";
@@ -30,40 +32,15 @@ export class KanlangCompiler {
     parser.feed(input);
     let ast = parser.results[0];
     // parser.results is an array of possible parsings.
-    console.log(ast);
+    console.log(JSON.stringify(ast, null, 2));
 
-    let annotateTree = this.annotateTree(ast);
-    console.log(JSON.stringify(annotateTree, null, 2));
-
-    let output = this.codeGeneration(annotateTree);
+    let output = this.codeGeneration(ast, {
+      functionMap: {},
+      variableMap: {},
+      types: new Set(),
+    });
     console.log(output);
     return { code: output };
-  }
-
-  annotateTree(tree: AstNode, parent: AnnotatedNode = null): AnnotatedNode {
-    if (isFunction(tree)) {
-      let metadata = {
-        variableMap: {},
-        functionMap: {},
-      };
-      metadata.functionMap[tree.function.signature.name] = tree;
-      tree.function.signature.args.forEach(
-        (arg) => (metadata.variableMap[arg.name] = arg)
-      );
-      let annotateTree = { ...tree, ...metadata, parent };
-      tree.function.body.forEach((statement) => {
-        this.annotateTree(statement, annotateTree);
-      });
-      return annotateTree;
-    } else if (isStatement(tree)) {
-      let metadata = {
-        variableMap: {},
-        functionMap: {},
-      };
-      let annotateTree = { ...tree, ...metadata, parent };
-      return annotateTree;
-    }
-    throw "Unrecognized node type";
   }
 
   expressionCodeGeneration(node: Expression): string {
@@ -79,20 +56,32 @@ export class KanlangCompiler {
     throw "Unrecognized expression type";
   }
 
-  codeGeneration(node: AnnotatedNode): string {
+  codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
       return `function ${
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
         ${node.function.body
-          .map((statement) => this.codeGeneration(statement as AnnotatedNode))
+          .map((statement) =>
+            this.codeGeneration(statement as AnnotatedNode, {
+              prev: frame,
+              variableMap: {},
+              functionMap: {},
+              types: frame.types,
+            })
+          )
           .join("\n")}
       }`;
+    } else if (isAssignment(node)) {
+      //TODO: check if variable already declared.
+      return `let ${node.assignment.name} = ${this.expressionCodeGeneration(
+        node.assignment.value
+      )}`;
     } else if (isStatement(node)) {
       if (node.return) {
         return `return ${this.expressionCodeGeneration(node.return)}`;
       }
-      throw "Unrecognized statement type:" + JSON.stringify(node);
+      throw "Unrecognized statement type:" + JSON.stringify(node, null, 2);
     }
   }
 }

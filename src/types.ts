@@ -1,10 +1,18 @@
-export type AstNode = Fn | Statement;
+export type AstNode = Fn | Statement | Assignment;
 
 export type AnnotatedNode = AstNode & Metadata & { parent?: AnnotatedNode };
 
 export interface Metadata {
   variableMap: Record<string, Type>;
   functionMap: Record<string, Fn>;
+}
+
+//Not really a stack frame, but a scope change
+export interface StackFrame {
+  prev?: StackFrame;
+  variableMap: Record<string, Type>;
+  functionMap: Record<string, Fn>;
+  types: Set<Type>;
 }
 
 export interface Type {
@@ -41,4 +49,15 @@ export type Fn = {
 };
 export function isFunction(node: AstNode): node is Fn {
   return (node as Fn).function !== undefined;
+}
+
+export type Assignment = {
+  assignment: {
+    type: Type;
+    name: string;
+    value: Expression;
+  };
+};
+export function isAssignment(node: AstNode): node is Assignment {
+  return (node as Assignment).assignment !== undefined;
 }

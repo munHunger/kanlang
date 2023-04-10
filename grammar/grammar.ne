@@ -11,7 +11,8 @@ const lexer = moo.compile({
   lbracket: '{',
   rbracket: '}',
   NL:      { match: /\n/, lineBreaks: true },
-  op: ['+','/','*']
+  op: ['+','/','*'],
+  eq: '=',
 });
 
 function idValue(d) { return d[0].value ?? d[0]; }
@@ -48,7 +49,8 @@ primitiveType -> "num"    {% idValue %}
                | "bool"   {% idValue %}
 
 statement -> expression %NL {% idValue %}
-           | %symbolName _ "=" _ statement # assignment
+           #| variableName _ "=" _ statement # assignment
+           | primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[0]}, name: d[2], value: d[6]}}) %}# variable creation
            # return statement
            | "return" _ statement {% d => ({return: d[2]})%}
 
