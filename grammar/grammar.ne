@@ -48,11 +48,11 @@ primitiveType -> "num"    {% idValue %}
                | "string" {% idValue %}
                | "bool"   {% idValue %}
 
-statement -> expression %NL {% idValue %}
+statement -> __ expression %NL {% d => d[1] %}
            #| variableName _ "=" _ statement # assignment
-           | primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[0]}, name: d[2], value: d[6]}}) %}# variable creation
+           | __ primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}# variable creation
            # return statement
-           | "return" _ statement {% d => ({return: d[2]})%}
+           | __ "return" _ statement {% d => ({return: d[3]})%}
 
 __ -> _:?
 _ -> %ws
