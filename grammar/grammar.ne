@@ -25,7 +25,9 @@ function idValue(d) { return d[0].value ?? d[0]; }
 @include "./expression.ne"
 
 
-main -> function {% idValue %}
+main -> function {% d => ({root: d}) %}
+      | statement {% d => ({root: d}) %}
+      | main main {% d => ({root: d}) %}
 
 paren[X] -> "(" $X ")" {% d => d[1] %}
 block[X] -> "{" __ $X __ "}" {% d => d[2] %}
@@ -53,6 +55,8 @@ statement -> __ expression %NL {% d => d[1] %}
            | __ primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}# variable creation
            # return statement
            | __ "return" _ statement {% d => ({return: d[3]})%}
+           # Type alias declaration
+           | __ variableType %NL {% d => ({typeDef: d[1]})%}
 
 __ -> _:?
 _ -> %ws

@@ -1,4 +1,4 @@
-export type AstNode = Fn | Statement | Assignment;
+export type AstNode = Fn | Statement | Assignment | TypeDef | Root;
 
 export type AnnotatedNode = AstNode & Metadata & { parent?: AnnotatedNode };
 
@@ -13,6 +13,22 @@ export interface StackFrame {
   variableMap: Record<string, Type>;
   functionMap: Record<string, Fn>;
   types: Set<Type>;
+}
+
+export interface TypeDef {
+  typeDef: Type;
+}
+
+export function isTypeDef(node: AstNode): node is TypeDef {
+  return (node as TypeDef).typeDef !== undefined;
+}
+
+export interface Root {
+  root: Array<AstNode>;
+}
+
+export function isRoot(node: AstNode): node is Root {
+  return (node as Root).root !== undefined;
 }
 
 export interface Type {

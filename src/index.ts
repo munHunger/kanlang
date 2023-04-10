@@ -9,7 +9,9 @@ import {
   Statement,
   isAssignment,
   isFunction,
+  isRoot,
   isStatement,
+  isTypeDef,
 } from "./types";
 export interface KanlangOutput {
   code: string;
@@ -68,16 +70,23 @@ export class KanlangCompiler {
     throw "Unrecognized expression type";
   }
 
-  isVariableInScope(name: string, frame: StackFrame) {
+  isVariableInScope(name: string, frame: StackFrame): boolean {
     if (frame.variableMap[name]) return true;
     if (frame.prev) return this.isVariableInScope(name, frame.prev);
+    return false;
+  }
+
+  isTypeDeclared(type: string, frame: StackFrame): boolean {
+    for (let t of frame.types) {
+      if (t.type === type) return true;
+    }
     return false;
   }
 
   codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
       for (let argType of node.function.signature.args) {
-        if (!frame.types.has(argType.type)) {
+        if (!this.isTypeDeclared(argType.type.type, frame)) {
           if (argType.type.alias && typeof argType.type.alias === "string") {
             // inline definition of an alias for a primitive value
             frame.types.add(argType.type);
@@ -97,11 +106,14 @@ export class KanlangCompiler {
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
         ${node.function.body
-          .map((statement) =>
-            this.codeGeneration(statement as AnnotatedNode, newFrame)
-          )
+          .map((statement) => this.codeGeneration(statement, newFrame))
           .join("\n")}
       }`;
+    } else if (isTypeDef(node)) {
+      //TODO: check if type already exists
+      console.log("adding type", node.typeDef);
+      frame.types.add(node.typeDef);
+      return ""; //compiling to js, so we don't need to declare types
     } else if (isAssignment(node)) {
       if (this.isVariableInScope(node.assignment.name, frame))
         throw new Error(`Variable ${node.assignment.name} already declared`);
@@ -110,6 +122,10 @@ export class KanlangCompiler {
       return `let ${node.assignment.name} = ${this.expressionCodeGeneration(
         node.assignment.value
       )}`;
+    } else if (isRoot(node)) {
+      return node.root
+        .map((statement) => this.codeGeneration(statement, frame))
+        .join("\n");
     } else if (isStatement(node)) {
       if (node.return) {
         return `return ${this.expressionCodeGeneration(node.return)}`;

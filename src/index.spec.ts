@@ -95,5 +95,25 @@ return fahrenheit
         }`);
       }).toThrow();
     });
+    it("does not need to inline declare type aliases", () => {
+      const result = compiler.feed(`
+        Celsius alias num
+        fn celsiusToFahrenheit(celsius Celsius) Fahrenheit alias num {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }`).code;
+      let conversionMap = [
+        [0, 32],
+        [100, 212],
+        [37, 98.6],
+        [20, 68],
+        [10, 50],
+      ];
+      conversionMap.forEach(([celsius, fahrenheit]) => {
+        expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(
+          fahrenheit
+        );
+      });
+    });
   });
 });
