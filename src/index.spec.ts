@@ -69,4 +69,22 @@ return fahrenheit
       expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(fahrenheit);
     });
   })
+  it("supports code comments", () => {
+    const result =
+      compiler.feed(`fn celsiusToFahrenheit(celsius Celsius) Fahrenheit alias num {
+        //assign fahrenheit
+        num fahrenheit = celsius * 9 / 5 + 32
+        return fahrenheit //is in scope, can be returned
+      }`).code;
+    let conversionMap = [
+      [0, 32],
+      [100, 212],
+      [37, 98.6],
+      [20, 68],
+      [10, 50],
+    ];
+    conversionMap.forEach(([celsius, fahrenheit]) => {
+      expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(fahrenheit);
+    });
+  })
 });

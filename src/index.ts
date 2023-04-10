@@ -21,13 +21,28 @@ export class KanlangCompiler {
     console.log("KanlangCompiler created");
   }
 
+  removeLineComments(input: string) {
+    return input
+      .split("\n")
+      .map((line) => {
+        if (line.includes("//")) {
+          return line.substring(0, line.indexOf("//"));
+        }
+        return line;
+      })
+      .map(line => line.trim()) //Leading and trailing spaces are a pain
+      .filter((v) => v !== "")
+      .join("\n");
+  }
+
   feed(input: string): KanlangOutput {
     // Create a Parser object from our grammar.
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar), {
       keepHistory: true,
     });
 
-    console.log(input);
+    input = this.removeLineComments(input);
+
     parser.feed(input);
     let ast = parser.results[0];
 
