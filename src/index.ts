@@ -5,7 +5,9 @@ import {
   AstNode,
   Expression,
   Fn,
+  StackFrame,
   Statement,
+  isAssignment,
   isFunction,
   isStatement,
 } from "./types";
@@ -19,51 +21,38 @@ export class KanlangCompiler {
     console.log("KanlangCompiler created");
   }
 
+  removeLineComments(input: string) {
+    return input
+      .split("\n")
+      .map((line) => {
+        if (line.includes("//")) {
+          return line.substring(0, line.indexOf("//"));
+        }
+        return line;
+      })
+      .map(line => line.trim()) //Leading and trailing spaces are a pain
+      .filter((v) => v !== "")
+      .join("\n");
+  }
+
   feed(input: string): KanlangOutput {
     // Create a Parser object from our grammar.
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar), {
       keepHistory: true,
     });
 
-    console.log(input);
-    // Parse something!
+    input = this.removeLineComments(input);
+
     parser.feed(input);
     let ast = parser.results[0];
-    // parser.results is an array of possible parsings.
-    console.log(ast);
 
-    let annotateTree = this.annotateTree(ast);
-    console.log(JSON.stringify(annotateTree, null, 2));
-
-    let output = this.codeGeneration(annotateTree);
+    let output = this.codeGeneration(ast, {
+      functionMap: {},
+      variableMap: {},
+      types: new Set(),
+    });
     console.log(output);
     return { code: output };
-  }
-
-  annotateTree(tree: AstNode, parent: AnnotatedNode = null): AnnotatedNode {
-    if (isFunction(tree)) {
-      let metadata = {
-        variableMap: {},
-        functionMap: {},
-      };
-      metadata.functionMap[tree.function.signature.name] = tree;
-      tree.function.signature.args.forEach(
-        (arg) => (metadata.variableMap[arg.name] = arg)
-      );
-      let annotateTree = { ...tree, ...metadata, parent };
-      tree.function.body.forEach((statement) => {
-        this.annotateTree(statement, annotateTree);
-      });
-      return annotateTree;
-    } else if (isStatement(tree)) {
-      let metadata = {
-        variableMap: {},
-        functionMap: {},
-      };
-      let annotateTree = { ...tree, ...metadata, parent };
-      return annotateTree;
-    }
-    throw "Unrecognized node type";
   }
 
   expressionCodeGeneration(node: Expression): string {
@@ -79,20 +68,42 @@ export class KanlangCompiler {
     throw "Unrecognized expression type";
   }
 
-  codeGeneration(node: AnnotatedNode): string {
+  isVariableInScope(name: string, frame: StackFrame) {
+    if (frame.variableMap[name]) return true;
+    if (frame.prev) return this.isVariableInScope(name, frame.prev);
+    return false;
+  }
+
+  codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
+      let newFrame: StackFrame = {
+        prev: frame,
+        variableMap: {},
+        functionMap: {},
+        types: frame.types,
+      };
       return `function ${
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
         ${node.function.body
-          .map((statement) => this.codeGeneration(statement as AnnotatedNode))
+          .map((statement) =>
+            this.codeGeneration(statement as AnnotatedNode, newFrame)
+          )
           .join("\n")}
       }`;
+    } else if (isAssignment(node)) {
+      if (this.isVariableInScope(node.assignment.name, frame))
+        throw new Error(`Variable ${node.assignment.name} already declared`);
+      //TODO: check variable type
+      frame.variableMap[node.assignment.name] = node.assignment.type;
+      return `let ${node.assignment.name} = ${this.expressionCodeGeneration(
+        node.assignment.value
+      )}`;
     } else if (isStatement(node)) {
       if (node.return) {
         return `return ${this.expressionCodeGeneration(node.return)}`;
       }
-      throw "Unrecognized statement type:" + JSON.stringify(node);
+      throw "Unrecognized statement type:" + JSON.stringify(node, null, 2);
     }
   }
 }
