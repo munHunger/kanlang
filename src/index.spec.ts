@@ -95,6 +95,12 @@ return fahrenheit
         }`);
       }).toThrow();
     });
+    it("throws errors when there is a type override", () => {
+      expect(() => {
+        compiler.feed(`Celsius alias num
+        Celsius alias num`);
+      }).toThrow();
+    });
     it("does not need to inline declare type aliases", () => {
       const result = compiler.feed(`
         Celsius alias num

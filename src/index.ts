@@ -110,8 +110,8 @@ export class KanlangCompiler {
           .join("\n")}
       }`;
     } else if (isTypeDef(node)) {
-      //TODO: check if type already exists
-      console.log("adding type", node.typeDef);
+      if (this.isTypeDeclared(node.typeDef.type, frame))
+        throw new Error(`Type ${node.typeDef.type} already declared`);
       frame.types.add(node.typeDef);
       return ""; //compiling to js, so we don't need to declare types
     } else if (isAssignment(node)) {
