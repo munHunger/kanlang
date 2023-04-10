@@ -41,4 +41,14 @@ return fahrenheit
       expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(fahrenheit);
     });
   });
+
+  it("throws errors when there is duplicate variable declaration", () => {
+    expect(() => {
+      compiler.feed(`fn celsiusToFahrenheit(celsius Celsius) Fahrenheit alias num {
+num fahrenheit = celsius * 9 / 5 + 32
+num fahrenheit = 2 + 2
+return fahrenheit
+}`);
+    }).toThrow();
+  });
 });

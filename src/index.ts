@@ -28,11 +28,8 @@ export class KanlangCompiler {
     });
 
     console.log(input);
-    // Parse something!
     parser.feed(input);
     let ast = parser.results[0];
-    // parser.results is an array of possible parsings.
-    console.log(JSON.stringify(ast, null, 2));
 
     let output = this.codeGeneration(ast, {
       functionMap: {},
@@ -56,24 +53,34 @@ export class KanlangCompiler {
     throw "Unrecognized expression type";
   }
 
+  isVariableInScope(name: string, frame: StackFrame) {
+    if (frame.variableMap[name]) return true;
+    if (frame.prev) return this.isVariableInScope(name, frame.prev);
+    return false;
+  }
+
   codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
+      let newFrame: StackFrame = {
+        prev: frame,
+        variableMap: {},
+        functionMap: {},
+        types: frame.types,
+      };
       return `function ${
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
         ${node.function.body
           .map((statement) =>
-            this.codeGeneration(statement as AnnotatedNode, {
-              prev: frame,
-              variableMap: {},
-              functionMap: {},
-              types: frame.types,
-            })
+            this.codeGeneration(statement as AnnotatedNode, newFrame)
           )
           .join("\n")}
       }`;
     } else if (isAssignment(node)) {
-      //TODO: check if variable already declared.
+      if (this.isVariableInScope(node.assignment.name, frame))
+        throw new Error(`Variable ${node.assignment.name} already declared`);
+      //TODO: check variable type
+      frame.variableMap[node.assignment.name] = node.assignment.type;
       return `let ${node.assignment.name} = ${this.expressionCodeGeneration(
         node.assignment.value
       )}`;
