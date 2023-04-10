@@ -67,7 +67,7 @@ export class KanlangCompiler {
       }
     }
     if (node.var) return node.var; //TODO: check if var is in scope
-    throw "Unrecognized expression type";
+    throw new Error(`Unrecognized expression type ${JSON.stringify(node)}`);
   }
 
   isVariableInScope(name: string, frame: StackFrame): boolean {

@@ -4,8 +4,9 @@ const moo = require("moo");
 const lexer = moo.compile({
   ws:     /[ \t]+/,
   number: /[0-9]+/,
-  symbolName: /[a-z][a-z0-9A-Z]+/,
-  typeName: /[A-Z][a-z0-9A-Z]+/,
+  keyword: ['while', 'if', 'else', 'return'],
+  symbolName: /[a-z][a-z0-9A-Z]*/,
+  typeName: /[A-Z][a-z0-9A-Z]*/,
   lparen:  '(',
   rparen:  ')',
   lbracket: '{',
@@ -52,7 +53,11 @@ primitiveType -> "num"    {% idValue %}
 
 statement -> __ expression %NL {% d => d[1] %}
            #| variableName _ "=" _ statement # assignment
-           | __ primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}# variable creation
+           # variable creation
+           | __ primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}
+           | __ variableType _ variableName _ "=" _ statement {% d => ({ assignment: {type: d[1], name: d[3], value: d[7]}}) %}
+           # dependency injection
+           | __ variableType _ variableName %NL {% d => ({dependency: {type: d[1], name: d[3]}}) %}
            # return statement
            | __ "return" _ statement {% d => ({return: d[3]})%}
            # Type alias declaration

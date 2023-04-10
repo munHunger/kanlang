@@ -121,5 +121,30 @@ return fahrenheit
         );
       });
     });
+    describe("DI", () => {
+      it("can inject values based on type", () => {
+        const result = compiler.feed(`
+          fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
+            num fahrenheit = celsius * 9 / 5 + 32
+            return fahrenheit
+          }
+          Celsius c = 32
+          Fahrenheit f
+          print f
+          `).code;
+        let conversionMap = [
+          [0, 32],
+          [100, 212],
+          [37, 98.6],
+          [20, 68],
+          [10, 50],
+        ];
+        conversionMap.forEach(([celsius, fahrenheit]) => {
+          expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(
+            fahrenheit
+          );
+        });
+      });
+    });
   });
 });
