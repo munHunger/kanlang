@@ -130,8 +130,7 @@ return fahrenheit
           }
           Celsius c = 32
           Fahrenheit f
-          print f
-          `).code;
+          print f`).code;
         let conversionMap = [
           [0, 32],
           [100, 212],

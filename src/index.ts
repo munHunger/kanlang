@@ -43,10 +43,19 @@ export class KanlangCompiler {
       keepHistory: true,
     });
 
-    input = this.removeLineComments(input);
+    input = this.removeLineComments(input) + "\n";
 
     parser.feed(input);
     let ast = parser.results[0];
+    if (parser.results.length > 1) {
+      console.warn(
+        "Grammar is ambiguous, using first result. Got " +
+          parser.results.length +
+          " results"
+      );
+    }
+
+    if (!ast) throw new Error("Parser failed to produce an AST");
 
     let output = this.codeGeneration(ast, {
       functionMap: {},

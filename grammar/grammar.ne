@@ -28,7 +28,8 @@ function idValue(d) { return d[0].value ?? d[0]; }
 
 main -> function {% d => ({root: d}) %}
       | statement {% d => ({root: d}) %}
-      | main main {% d => ({root: d}) %}
+      | %NL {% d => ({root: undefined}) %}
+      | main main {% d => ({root: d.map(d => d.root).filter(v => v).flat()}) %}
 
 paren[X] -> "(" $X ")" {% d => d[1] %}
 block[X] -> "{" __ $X __ "}" {% d => d[2] %}
