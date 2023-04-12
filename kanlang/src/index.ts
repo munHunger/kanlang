@@ -1,4 +1,4 @@
-import { default as grammar } from "../grammar/out/grammar";
+import { default as grammar } from "./grammar/out/grammar";
 import * as nearley from "nearley";
 import {
   AnnotatedNode,
