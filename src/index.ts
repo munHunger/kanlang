@@ -8,6 +8,7 @@ import {
   StackFrame,
   Statement,
   isAssignment,
+  isDependencyInjection,
   isFunction,
   isRoot,
   isStatement,
@@ -92,6 +93,33 @@ export class KanlangCompiler {
     return false;
   }
 
+  dependencyInjectionCodeGeneration(
+    type: string,
+    frame: StackFrame
+  ): string | undefined {
+    console.log("searching for dependency injection for type " + type);
+    for (let fn of Object.values(frame.functionMap)) {
+      if (fn.function.signature.returnType.type === type) {
+        if (fn.function.signature.args.length > 0) {
+          let args = fn.function.signature.args.map((arg) =>
+            this.dependencyInjectionCodeGeneration(arg.type.type, frame)
+          );
+          if (args.includes(undefined)) return undefined;
+          var fnArgs = args.join(", ");
+        }
+        return `${fn.function.signature.name}(${fnArgs || ""})`;
+      }
+    }
+    for (let v of Object.entries(frame.variableMap)) {
+      if (v[1].type === type) {
+        return v[0];
+      }
+    }
+    if (frame.prev)
+      return this.dependencyInjectionCodeGeneration(type, frame.prev);
+    return undefined;
+  }
+
   codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
       for (let argType of node.function.signature.args) {
@@ -105,6 +133,7 @@ export class KanlangCompiler {
             );
         }
       }
+      frame.functionMap[node.function.signature.name] = node;
       let newFrame: StackFrame = {
         prev: frame,
         variableMap: {},
@@ -135,6 +164,16 @@ export class KanlangCompiler {
       return node.root
         .map((statement) => this.codeGeneration(statement, frame))
         .join("\n");
+    } else if (isDependencyInjection(node)) {
+      let dep = this.dependencyInjectionCodeGeneration(
+        node.dependency.type.type,
+        frame
+      );
+      if (!dep)
+        throw new Error(
+          `No dependency injection found for type ${node.dependency.type.type}`
+        );
+      return `let ${node.dependency.name} = ${dep}`;
     } else if (isStatement(node)) {
       if (node.return) {
         return `return ${this.expressionCodeGeneration(node.return)}`;

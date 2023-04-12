@@ -38,8 +38,8 @@ function -> functionSignature __ block[statement:+] {% d =>
 ({function: {signature: d[0], body: d[2].flat()}}) %}
 
 
-functionSignature -> "fn" _ %symbolName paren[argsArray] _ variableType {% d => 
-({name: d[2].value, args: d[3], returnType: d[5]}) %}
+functionSignature -> "fn" _ %symbolName paren[argsArray:?] _ variableType {% d => 
+({name: d[2].value, args: d[3].filter(v=>v), returnType: d[5]}) %}
 
 argsArray -> variableName _ variableType {% d => ({name: d[0], type: d[2]}) %}
            | variableName _ variableType "," __ argsArray

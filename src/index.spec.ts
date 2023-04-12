@@ -128,21 +128,14 @@ return fahrenheit
             num fahrenheit = celsius * 9 / 5 + 32
             return fahrenheit
           }
-          Celsius c = 32
+          Celsius c = 100
           Fahrenheit f
-          print f`).code;
-        let conversionMap = [
-          [0, 32],
-          [100, 212],
-          [37, 98.6],
-          [20, 68],
-          [10, 50],
-        ];
-        conversionMap.forEach(([celsius, fahrenheit]) => {
-          expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(
-            fahrenheit
-          );
-        });
+          fn main() DI alias num {
+            return f
+          }
+          `).code;
+        console.log(result);
+        expect(eval(result + `main()`)).toBe(212);
       });
     });
   });
