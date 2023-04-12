@@ -134,7 +134,6 @@ return fahrenheit
             return f
           }
           `).code;
-        console.log(result);
         expect(eval(result + `main()`)).toBe(212);
       });
     });

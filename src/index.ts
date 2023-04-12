@@ -97,7 +97,6 @@ export class KanlangCompiler {
     type: string,
     frame: StackFrame
   ): string | undefined {
-    console.log("searching for dependency injection for type " + type);
     for (let fn of Object.values(frame.functionMap)) {
       if (fn.function.signature.returnType.type === type) {
         if (fn.function.signature.args.length > 0) {
