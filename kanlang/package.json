@@ -2,12 +2,13 @@
   "name": "kanlang",
   "version": "0.1.0",
   "description": "a generic programming language",
-  "main": "index.js",
-  "type": "module",
+  "main": "dist/index.js",
+  "type": "commonjs",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "buildGrammar": "rm -r grammar/out && mkdir -p grammar/out && nearleyc grammar/grammar.ne -o grammar/out/grammar.ts"
+    "build": "npm run buildGrammar && tsc",
+    "buildGrammar": "rm -r src/grammar/out || true && mkdir -p src/grammar/out && nearleyc grammar/grammar.ne -o src/grammar/out/grammar.ts"
   },
   "author": "",
   "license": "MIT",

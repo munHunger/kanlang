@@ -5,7 +5,7 @@
 paren[X] -> "(" $X ")" {% d => d[1] %}
 expression -> exp _ operator _ expression {% d => ({op: d[2], args: [d[0], d[4]]}) %}
             | exp {% id %}
-            #| operator _ expression            # call operator with right
+            | operator __ exp {% d => ({op: d[0], args: [d[2]]}) %} # call operator with right
             #| operator _ "(" _ expression _ ("," _ expression):+ _ ")"     # call operator with right
             #| "(" _ expression _ ")"             # group
             #| variableName {% d => ({var: d[0]}) %}
@@ -26,7 +26,8 @@ exp -> paren[_ expression _] {% d => d[0] %}
 
 constant -> %number {% d => parseInt(d[0].value) %}
 
-# FIXME: this is not correct, but it's a good approximation
+
 operator -> mathFunctions {% d => d[0][0].value %}
+          | variableName {% d => ({ op: d[0]}) %}
 
 mathFunctions -> "+" | "-" | "*" | "/" | "%" | "**" | "==" | "!=" | "===" | "!==" | "<" | "<=" | ">" | ">=" | "&&" | "||" | "!" | "??"
