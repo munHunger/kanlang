@@ -26,10 +26,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 18
+      - name: Use Node.js 19
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 19
       - name: npm install and build
         run: |
           cd kanlang
