@@ -32,11 +32,11 @@ jobs:
           node-version: 19
       - name: npm install and build
         run: |
-          cd kanlang
-          npm install
-          npm run build
-          cd ../editor
-          npm install
+          cd kanlang && \
+          npm install && \
+          npm run build && \
+          cd ../editor && \
+          npm install && \
           npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v2
