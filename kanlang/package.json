@@ -2,12 +2,12 @@
   "name": "kanlang",
   "version": "0.1.0",
   "description": "a generic programming language",
-  "main": "dist/index.js",
+  "main": "dist/bundle.js",
   "type": "commonjs",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "build": "npm run buildGrammar && tsc",
+    "build": "npm run buildGrammar && webpack",
     "buildGrammar": "rm -r src/grammar/out || true && mkdir -p src/grammar/out && nearleyc grammar/grammar.ne -o src/grammar/out/grammar.ts"
   },
   "author": "",
@@ -16,7 +16,10 @@
     "@jest/globals": "^29.5.0",
     "@types/jest": "^29.4.0",
     "ts-jest": "^29.0.5",
-    "typescript": "^4.9.5"
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.79.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "@types/nearley": "^2.11.2",
