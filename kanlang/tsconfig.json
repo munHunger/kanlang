@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "ES6",
+    "target": "ES6",
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "declarationMap": true,
     "declaration": true,
+    "moduleResolution": "node",
     "outDir": "./dist",
-    "strict": false,
-    "downlevelIteration": true,
-    "moduleResolution": "node"
+    "declarationDir": "./dist",
+    "rootDir": "."
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "include": ["src"]
 }

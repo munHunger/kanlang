@@ -2,8 +2,8 @@
   "name": "kanlang",
   "version": "0.1.0",
   "description": "a generic programming language",
-  "main": "dist/bundle.js",
-  "type": "commonjs",
+  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",

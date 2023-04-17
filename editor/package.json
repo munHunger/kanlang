@@ -19,5 +19,5 @@
 		"vite": "^4.2.0",
 		"kanlang": "file:../kanlang"
 	},
-	"type": "commonjs"
+	"type": "module"
 }

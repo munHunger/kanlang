@@ -1,8 +1,8 @@
 <script>
-  // @ts-ignore
+  // @ts-nocheck
   import * as kanlang from "kanlang";
+  const { KanlangCompiler } = kanlang;
   import Editor from "./editor.svelte";
-  console.log(kanlang);
   let kanlangExample = `          
   fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
       num fahrenheit = celsius * 9 / 5 + 32
@@ -16,7 +16,7 @@
   // @ts-ignore
   function compile(input) {
     try {
-      return new kanlang.KanlangCompiler().feed(input).code;
+      return new KanlangCompiler().feed(input).code;
     } catch (e) {
       return JSON.stringify(e);
     }
