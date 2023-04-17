@@ -1,5 +1,4 @@
 <script>
-  // @ts-nocheck
   import * as kanlang from "kanlang";
   const { KanlangCompiler } = kanlang;
   import Editor from "./editor.svelte";

@@ -1,9 +1,7 @@
 const path = require("path");
 
 module.exports = {
-  entry: {
-    kanlang: path.resolve(__dirname, "src/index.ts"),
-  },
+  entry: "./src/index.ts",
   module: {
     rules: [
       {
@@ -20,5 +18,10 @@ module.exports = {
   output: {
     filename: "index.js",
     path: path.resolve(__dirname, "dist"),
+    globalObject: "this",
+    library: {
+      name: "kanlang",
+      type: "umd",
+    },
   },
 };
