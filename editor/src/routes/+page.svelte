@@ -17,8 +17,8 @@
     try {
       return new KanlangCompiler().feed(input).code;
     } catch (e) {
-      console.log(kanlang);
-      console.error(e);
+      console.log("kanlang", kanlang, KanlangCompiler);
+      console.error("error building", e);
       return JSON.stringify(e);
     }
   }
