@@ -8,10 +8,10 @@
       return fahrenheit
   }
   Celsius c = 100
-  Fahrenheit f
+  Fahrenheit f //Will be fetched via dependency injection
   fn main() DI alias num {
       return f
-  }`;
+  }`.trim();
   // @ts-ignore
   function compile(input) {
     try {
