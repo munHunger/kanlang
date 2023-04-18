@@ -15,13 +15,16 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
   },
+  experiments: {
+    outputModule: true,
+  },
   output: {
     filename: "index.js",
     path: path.resolve(__dirname, "dist"),
     globalObject: "this",
     library: {
-      name: "kanlang",
-      type: "umd",
+      // name: "kanlang",
+      type: "module",
     },
   },
 };
