@@ -18,11 +18,14 @@ jobs:
         run: |
           cd kanlang
           npm install
+          npm run build
           npm run test
   check-version-update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: check diff
         run: |
-          git diff
+          git diff --name-only -r HEAD^1 HEAD
