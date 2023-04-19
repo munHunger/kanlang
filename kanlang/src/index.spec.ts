@@ -137,7 +137,7 @@ return fahrenheit
         expect(eval(result + `main()`)).toBe(212);
       });
     });
-    it("can invoke functions directly", () => {
+    it("can invoke functions directly without parenthesis", () => {
       const result = compiler.feed(`
         fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
           num fahrenheit = celsius * 9 / 5 + 32
@@ -145,6 +145,20 @@ return fahrenheit
         }
         Celsius c = 100
         Fahrenheit f = celsiusToFahrenheit c
+        fn main() DI alias num {
+          return f
+        }
+        `).code;
+      expect(eval(result + `main()`)).toBe(212);
+    });
+    it("can invoke functions directly with parenthesis", () => {
+      const result = compiler.feed(`
+        fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }
+        Celsius c = 100
+        Fahrenheit f = celsiusToFahrenheit(c)
         fn main() DI alias num {
           return f
         }

@@ -12,7 +12,7 @@ expression -> exp _ operator _ expression {% d => ({op: d[2], args: [d[0], d[4]]
             #| constant {% id %}
             #| "(" _ ")"
             #| null # needed for functions without arguments, ex: print()
-exp -> paren[_ expression _] {% d => d[0] %}
+exp -> paren[ expression ] {% d => d[0][0] %} # The extra index seems like a hack
       | variableName {% d => ({var: d[0]}) %}
       | constant {% d => ({const: d[0]}) %}
 # print "hello world"

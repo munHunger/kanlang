@@ -68,6 +68,7 @@ export class KanlangCompiler {
   }
 
   expressionCodeGeneration(node: Expression): string {
+    if (!node) throw new Error("Cannot generate expression from null node");
     if (node.const) return `${node.const}`;
     if (node.op && typeof node.op === "string") {
       if (["+", "-", "*", "/"].includes(node.op)) {
