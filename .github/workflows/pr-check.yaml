@@ -28,4 +28,13 @@ jobs:
           fetch-depth: 2
       - name: check diff
         run: |
-          git diff --name-only -r HEAD^1 HEAD
+          git diff --name-only -r HEAD^1 HEAD | grep package.json
+  check-release-note-change:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: check diff
+        run: |
+          git diff --name-only -r HEAD^1 HEAD | grep releaseNotes
