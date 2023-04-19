@@ -31,7 +31,7 @@ main -> function {% d => ({root: d}) %}
       | %NL {% d => ({root: undefined}) %}
       | main main {% d => ({root: d.map(d => d.root).filter(v => v).flat()}) %}
 
-paren[X] -> "(" $X ")" {% d => d[1] %}
+paren[X] -> "(" __ $X __ ")" {% d => d[2] %}
 block[X] -> "{" __ $X __ "}" {% d => d[2] %}
 
 function -> functionSignature __ block[statement:+] {% d => 
