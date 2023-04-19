@@ -69,11 +69,19 @@ export class KanlangCompiler {
 
   expressionCodeGeneration(node: Expression): string {
     if (node.const) return `${node.const}`;
-    if (node.op) {
+    if (node.op && typeof node.op === "string") {
       if (["+", "-", "*", "/"].includes(node.op)) {
         return `${this.expressionCodeGeneration(node.args[0])} ${
           node.op
         } ${this.expressionCodeGeneration(node.args[1])}`;
+      }
+    }
+    if (node.op && typeof node.op === "object") {
+      if (node.op.fn) {
+        //TODO: need to check if function exists
+        return `${node.op.fn} (${node.args
+          .map((arg) => this.expressionCodeGeneration(arg))
+          .join(", ")})`;
       }
     }
     if (node.var) return node.var; //TODO: check if var is in scope

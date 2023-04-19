@@ -56,7 +56,7 @@ export interface Type {
 }
 
 export interface Expression {
-  op: string;
+  op: string | {fn: string};
   args: Array<Expression>;
   var: string;
   const: number | string;

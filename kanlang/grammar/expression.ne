@@ -28,6 +28,6 @@ constant -> %number {% d => parseInt(d[0].value) %}
 
 
 operator -> mathFunctions {% d => d[0][0].value %}
-          | variableName {% d => ({ op: d[0]}) %}
+          | variableName {% d => ({ fn: d[0]}) %}
 
 mathFunctions -> "+" | "-" | "*" | "/" | "%" | "**" | "==" | "!=" | "===" | "!==" | "<" | "<=" | ">" | ">=" | "&&" | "||" | "!" | "??"
