@@ -94,6 +94,11 @@ export class KanlangCompiler {
     if (frame.prev) return this.isVariableInScope(name, frame.prev);
     return false;
   }
+  isFunctionInScope(name: string, frame: StackFrame): boolean {
+    if (frame.functionMap[name]) return true;
+    if (frame.prev) return this.isFunctionInScope(name, frame.prev);
+    return false;
+  }
 
   isTypeDeclared(type: string, frame: StackFrame): boolean {
     for (let t of frame.types) {
@@ -148,6 +153,10 @@ export class KanlangCompiler {
         functionMap: {},
         types: frame.types,
       };
+      if (this.isFunctionInScope(node.function.signature.name, frame))
+        throw new Error(
+          `Function ${node.function.signature.name} already declared`
+        );
       return `function ${
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
