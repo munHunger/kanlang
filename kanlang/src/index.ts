@@ -100,6 +100,14 @@ export class KanlangCompiler {
     return false;
   }
 
+  isReturnTypeInUse(type: string, frame: StackFrame): boolean {
+    for (let fn of Object.values(frame.functionMap)) {
+      if (fn.function.signature.returnType.type === type) return true;
+    }
+    if (frame.prev) return this.isReturnTypeInUse(type, frame.prev);
+    return false;
+  }
+
   isTypeDeclared(type: string, frame: StackFrame): boolean {
     for (let t of frame.types) {
       if (t.type === type) return true;
@@ -139,7 +147,9 @@ export class KanlangCompiler {
         throw new Error(
           `Function ${node.function.signature.name} already declared`
         );
-      if (this.isTypeDeclared(node.function.signature.returnType.type, frame))
+      if (
+        this.isReturnTypeInUse(node.function.signature.returnType.type, frame)
+      )
         throw new Error(
           `Return type ${node.function.signature.returnType.type} already in declared`
         );
