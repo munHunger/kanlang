@@ -135,6 +135,14 @@ export class KanlangCompiler {
 
   codeGeneration(node: AstNode, frame: StackFrame): string {
     if (isFunction(node)) {
+      if (this.isFunctionInScope(node.function.signature.name, frame))
+        throw new Error(
+          `Function ${node.function.signature.name} already declared`
+        );
+      if (this.isTypeDeclared(node.function.signature.returnType.type, frame))
+        throw new Error(
+          `Return type ${node.function.signature.returnType.type} already in declared`
+        );
       for (let argType of node.function.signature.args) {
         if (!this.isTypeDeclared(argType.type.type, frame)) {
           if (argType.type.alias && typeof argType.type.alias === "string") {
@@ -153,10 +161,6 @@ export class KanlangCompiler {
         functionMap: {},
         types: frame.types,
       };
-      if (this.isFunctionInScope(node.function.signature.name, frame))
-        throw new Error(
-          `Function ${node.function.signature.name} already declared`
-        );
       return `function ${
         node.function.signature.name
       }(${node.function.signature.args.map((v) => v.name).join(",")}) {
