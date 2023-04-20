@@ -121,6 +121,36 @@ return fahrenheit
         );
       });
     });
+    it("cannot declare the same function twice", () => {
+      expect(() => {
+        compiler.feed(`
+        fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }
+        
+        fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }`);
+      }).toThrow();
+    });
+    it("cannot declare two functions with the same return", () => {
+      expect(() => {
+        compiler.feed(`
+        Celsius alias num
+        Fahrenheit alias num
+        fn celsiusToFahrenheit(celsius Celsius) Fahrenheit {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }
+        
+        fn toFahrenheit(celsius Celsius) Fahrenheit {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }`);
+      }).toThrow();
+    });
     describe("DI", () => {
       it("can inject values based on type", () => {
         const result = compiler.feed(`

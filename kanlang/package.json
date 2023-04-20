@@ -1,6 +1,6 @@
 {
   "name": "kanlang",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "a generic programming language",
   "main": "dist/index.js",
   "scripts": {
