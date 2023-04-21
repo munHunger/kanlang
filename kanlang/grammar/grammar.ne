@@ -16,6 +16,8 @@ const lexer = moo.compile({
   eq: '=',
 });
 
+const variables = new Set();
+
 function idValue(d) { return d[0].value ?? d[0]; }
 %}
 
@@ -56,7 +58,9 @@ statement -> __ expression %NL {% d => d[1] %}
            #| variableName _ "=" _ statement # assignment
            # variable creation
            | __ primitiveType _ variableName _ "=" _ statement {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}
-           | __ variableType _ variableName _ "=" _ statement {% d => ({ assignment: {type: d[1], name: d[3], value: d[7]}}) %}
+           | __ variableType _ variableName _ "=" _ statement {% d => {
+              variables.add(d[3])
+              return { assignment: {type: d[1], name: d[3], value: d[7]}}} %}
            # dependency injection
            | __ variableType _ variableName %NL {% d => ({dependency: {type: d[1], name: d[3]}}) %}
            # return statement

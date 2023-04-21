@@ -23,7 +23,6 @@ return celsius * 9 / 5 + 32
       expect(eval(result + `celsiusToFahrenheit(${celsius})`)).toBe(fahrenheit);
     });
   });
-
   it("can save values in variables", () => {
     const result =
       compiler.feed(`fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
@@ -196,6 +195,20 @@ return fahrenheit
         }
         Celsius c = 100
         Fahrenheit f = celsiusToFahrenheit c
+        fn main() DI alias num {
+          return f
+        }
+        `).code;
+      expect(eval(result + `main()`)).toBe(212);
+    });
+    it("can handle infix function calls", () => {
+      const result = compiler.feed(`
+        fn asFahrenheit(celsius Celsius alias num) Fahrenheit alias num {
+          num fahrenheit = celsius * 9 / 5 + 32
+          return fahrenheit
+        }
+        Celsius c = 100
+        Fahrenheit f = c asFahrenheit
         fn main() DI alias num {
           return f
         }
