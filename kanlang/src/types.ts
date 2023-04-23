@@ -56,7 +56,7 @@ export interface Type {
 }
 
 export interface Expression {
-  op: string | {fn: string};
+  op: string | { fn?: string; builtin?: string };
   args: Array<Expression>;
   var: string;
   const: number | string;
@@ -64,6 +64,7 @@ export interface Expression {
 
 export interface Statement {
   return?: Expression;
+  expression?: Expression;
 }
 export function isStatement(node: AstNode): node is Statement {
   return (node as Statement) !== undefined;

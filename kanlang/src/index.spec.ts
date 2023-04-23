@@ -7,6 +7,15 @@ describe("KanlangCompiler", () => {
     compiler = new KanlangCompiler();
   });
 
+  describe("builtins", () => {
+    it("can print to the console", () => {
+      const result = compiler.feed("print 43").code;
+      console.log = jest.fn();
+      eval(result);
+      expect(console.log).toHaveBeenCalledWith(43);
+    });
+  });
+
   it("write a function for celsius to fahrenheit", () => {
     const result =
       compiler.feed(`fn celsiusToFahrenheit(celsius Celsius alias num) Fahrenheit alias num {

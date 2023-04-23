@@ -20,6 +20,7 @@ export interface KanlangOutput {
 
 export class KanlangCompiler {
   input: string; // input source code
+  ast: AstNode;
   constructor() {
     console.log("KanlangCompiler created");
   }
@@ -44,10 +45,10 @@ export class KanlangCompiler {
       keepHistory: true,
     });
 
-    input = this.removeLineComments(input) + "\n";
+    this.input = this.removeLineComments(input) + "\n";
 
-    parser.feed(input);
-    let ast = parser.results[0];
+    parser.feed(this.input);
+    this.ast = parser.results[0];
     if (parser.results.length > 1) {
       console.warn(
         "Grammar is ambiguous, using first result. Got " +
@@ -56,9 +57,9 @@ export class KanlangCompiler {
       );
     }
 
-    if (!ast) throw new Error("Parser failed to produce an AST");
+    if (!this.ast) throw new Error("Parser failed to produce an AST");
 
-    let output = this.codeGeneration(ast, {
+    let output = this.codeGeneration(this.ast, {
       functionMap: {},
       variableMap: {},
       types: new Set(),
@@ -69,23 +70,46 @@ export class KanlangCompiler {
 
   expressionCodeGeneration(node: Expression): string {
     if (!node) throw new Error("Cannot generate expression from null node");
-    if (node.const) return `${node.const}`;
-    if (node.op && typeof node.op === "string") {
-      if (["+", "-", "*", "/"].includes(node.op)) {
-        return `${this.expressionCodeGeneration(node.args[0])} ${
-          node.op
-        } ${this.expressionCodeGeneration(node.args[1])}`;
+    const exp = node;
+    if (!exp) throw node;
+    if (exp.const) return `${exp.const}`;
+    if (exp.op && typeof exp.op === "string") {
+      if (["+", "-", "*", "/"].includes(exp.op)) {
+        if (exp.args.length !== 2)
+          throw new Error(
+            `Expected 2 arguments for ${exp.op} but got ${
+              exp.args.length
+            } arguments. ${JSON.stringify(exp.args)}\n${JSON.stringify(
+              this.ast,
+              null,
+              2
+            )}`
+          );
+        return `${this.expressionCodeGeneration(exp.args[0])} ${
+          exp.op
+        } ${this.expressionCodeGeneration(exp.args[1])}`;
       }
     }
-    if (node.op && typeof node.op === "object") {
-      if (node.op.fn) {
-        //TODO: need to check if function exists
-        return `${node.op.fn} (${node.args
+    if (exp.op && typeof exp.op === "object") {
+      if (exp.op.fn) {
+        return `${exp.op.fn}(${exp.args
           .map((arg) => this.expressionCodeGeneration(arg))
           .join(", ")})`;
       }
+      if (exp.op.builtin) {
+        switch (exp.op.builtin) {
+          case "print":
+            return `console.log(${exp.args
+              .map((arg) => this.expressionCodeGeneration(arg))
+              .join(", ")})`;
+          default:
+            throw new Error(
+              `built in function ${exp.op.builtin} is not yet implemented`
+            );
+        }
+      }
     }
-    if (node.var) return node.var; //TODO: check if var is in scope
+    if (exp.var) return exp.var; //TODO: check if var is in scope
     throw new Error(`Unrecognized expression type ${JSON.stringify(node)}`);
   }
 
@@ -208,6 +232,9 @@ export class KanlangCompiler {
     } else if (isStatement(node)) {
       if (node.return) {
         return `return ${this.expressionCodeGeneration(node.return)}`;
+      }
+      if (node.expression) {
+        return this.expressionCodeGeneration(node.expression);
       }
       throw "Unrecognized statement type:" + JSON.stringify(node, null, 2);
     }
