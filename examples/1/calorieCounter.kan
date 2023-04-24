@@ -1,0 +1,38 @@
+fn readInput(fileName FileName alias string) RawInput alias string {
+    return readFile fileName
+}
+
+fn splitInventories(input RawInput) [Inventory alias [num]] {
+    lines = input split "\n"
+    [Inventory] inventories = []
+    lines foreach { line 
+        if(line isEmpty) {
+            inventories push []
+        } else {
+            lines[length lines] push (line asInt)
+        }
+    }
+    return inventories
+}
+
+fn sumInventories(inventories [Inventory]) [SummedInventory alias num] {
+    return inventories map { inventory
+        return inventory reduce { acc, val, 0
+            acc + val
+        }
+    }
+}
+
+fn findMax(inventories [SummedInventory]) BiggestInventory alias num {
+    return inventories reduce { acc, val, 0
+        if(acc > val) {
+            return acc
+        } else {
+            return val
+        }
+    }
+}
+
+BiggestInventory b
+
+print b
