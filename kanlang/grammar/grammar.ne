@@ -4,17 +4,21 @@ const moo = require("moo");
 const lexer = moo.compile({
   ws:     /[ \t]+/,
   number: /[0-9]+/,
-  keyword: ['while', 'if', 'else', 'return'],
-  builtins:  ['print'],
-  symbolName: /[a-z][a-z0-9A-Z]*/,
+  symbolName: {match: /[a-z][a-z0-9A-Z]*/, type: moo.keywords({
+        'keyword': ['while', 'if', 'else', 'return'],
+        'builtins': ['print', 'split']
+      })},
   typeName: /[A-Z][a-z0-9A-Z]*/,
   lparen:  '(',
   rparen:  ')',
   lbracket: '{',
   rbracket: '}',
+  lsbracket: '[',
+  rsbracket: ']',
   NL:      { match: /\n/, lineBreaks: true },
   op: ['+','/','*'],
   eq: '=',
+  string: /".*?"/
 });
 
 const variables = new Set();
@@ -27,15 +31,12 @@ function idValue(d) { return d[0].value ?? d[0]; }
 @preprocessor typescript
 
 @include "./expression.ne"
-
+@include "./helpers.ne"
 
 main -> function {% d => ({root: d}) %}
       | statement {% d => ({root: d}) %}
       | %NL {% d => ({root: undefined}) %}
       | main main {% d => ({root: d.map(d => d.root).filter(v => v).flat()}) %}
-
-paren[X] -> "(" __ $X __ ")" {% d => d[2] %}
-block[X] -> "{" __ $X __ "}" {% d => d[2] %}
 
 function -> functionSignature __ block[statement:+] {% d => 
 ({function: {signature: d[0], body: d[2].flat()}}) %}
@@ -48,15 +49,18 @@ argsArray -> variableName _ variableType {% d => ({name: d[0], type: d[2]}) %}
            | variableName _ variableType "," __ argsArray
 
 variableName -> %symbolName {% d => d[0].value %}
-variableType -> %typeName {% d => ({type: d[0].value}) %}
-              | %typeName _ "alias" _ primitiveType {% d => ({type: d[0].value, alias: d[4]}) %}
+variableType -> %typeName                                    {% d => ({type: d[0].value}) %}
+              | bracket[variableType]                        {% d => ({type: d[0], array: true}) %}
+              | %typeName _ "alias" _ primitiveType          {% d => ({type: d[0].value, alias: d[4]}) %}
+              | %typeName _ "alias" _ bracket[primitiveType] {% d => ({type: d[0].value, alias: d[4], array: true}) %}
 
 primitiveType -> "num"    {% idValue %}
                | "string" {% idValue %}
                | "bool"   {% idValue %}
 
 statement -> __ expression %NL {% d => ({ expression: d[1] }) %}
-           #| variableName _ "=" _ statement # assignment
+           # Implicit create if not exists 
+           | variableName _ "=" _ expression  %NL {% d => ({ assignment: {type: {type: undefined}, name: d[2], value: d[6]}}) %} # assignment
            # variable creation
            | __ primitiveType _ variableName _ "=" _ expression %NL {% d => ({ assignment: {type: {type: d[1]}, name: d[3], value: d[7]}}) %}
            | __ variableType _ variableName _ "=" _ expression %NL {% d => {
@@ -68,6 +72,7 @@ statement -> __ expression %NL {% d => ({ expression: d[1] }) %}
            | __ "return" _ expression %NL {% d => ({return: d[3]})%}
            # Type alias declaration
            | __ variableType %NL {% d => ({typeDef: d[1]})%}
+           | if
 
 __ -> _:?
 _ -> %ws
