@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  // List of configurations. Add new configurations or edit existing ones.
+  "configurations": [
+    {
+      "type": "extensionHost",
+      "request": "launch",
+      "name": "Launch Client",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceRoot}/kanlang/apps/lsp-client/out/**/*.js"]
+      //"preLaunchTask": "npm: watch"
+    },
+    {
+      "name": "Start LSP",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/kanlang/dist/apps/lsp"
+      ],
+      "trace": "false",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "outFiles": ["${workspaceFolder}/kanlang/dist/apps/lsp"],
+      "preLaunchTask": "${defaultBuildTask}"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Kanlang",
+	"patterns": [
+	  {
+		"include": "#keywords"
+	  },
+	  {
+		"include": "#strings"
+	  },
+	  {
+		"include": "#constants"
+	  },
+	  {
+		"include": "#variables"
+	  },
+	  {
+		"include": "#arguments"
+	  },
+	  {
+		"include": "#functions"
+	  }
+	],
+	"repository": {
+	  "keywords": {
+		"patterns": [
+		  {
+			"name": "keyword.control.linitic",
+			"match": "\\b(vocabulary|grammar|story|ex|title):(\\b|$)"
+		  }
+		]
+	  },
+	  "functions": {
+		"name": "entity.name.function",
+		"match": "\\b(text|validate|replace|save)\\b"
+	  },
+	  "arguments": {
+		"patterns": [
+		  {
+			"name": "string.quoted",
+			"match": "(?<=validate\\s)(.+?)(?=(\\||}))"
+		  },
+		  {
+			"name": "string.quoted",
+			"match": "(?<=replace\\s)(.+?)(?=(\\||}))"
+		  },
+		  {
+			"name": "string.quoted",
+			"match": "(?<=save\\s)(.+?)(?=(\\||}))"
+		  }
+		]
+	  },
+	  "variables": {
+		"name": "entity.name.tag",
+		"match": "\\$[a-zA-Z0-9]+\\b"
+	  },
+	  "constants": {
+		"name": "constant.language.linitic",
+		"match": "(hiragana|katakana)"
+	  },
+	  "strings": {
+		"name": "string.quoted.double.linitic",
+		"begin": "\"",
+		"end": "\"",
+		"patterns": [
+		  {
+			"name": "constant.character.escape.linitic",
+			"match": "\\\\."
+		  }
+		]
+	  }
+	},
+	"scopeName": "text.kanlang"
+  }
