@@ -1,3 +1,0 @@
-fn celsiusToFahrenheit(celsius Celsius) Fahrenheit alias num {
-return celsius * 9 / 5 + 32
-}
