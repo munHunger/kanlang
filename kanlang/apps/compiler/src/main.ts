@@ -1,6 +1,6 @@
 //import tm from './assets/kanlang.tmLanguage.json';
 import fs from 'fs';
-import { Tokenizer } from './tokenizer';
+import { Tokenizer } from '@kanlang/kanlang';
 
 const tokenizer = new Tokenizer();
 
