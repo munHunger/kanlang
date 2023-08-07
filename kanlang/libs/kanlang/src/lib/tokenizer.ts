@@ -1,6 +1,12 @@
 export type Token = {
   value: string;
-  type: string;
+  type:
+    | 'keyword'
+    | 'operator'
+    | 'comment'
+    | 'literal'
+    | 'whitespace'
+    | 'number';
   start: number;
   end: number;
 };
@@ -52,6 +58,16 @@ export const literal: TokenClass = {
   ],
 };
 
+export const number: TokenClass = {
+  name: 'number',
+  patterns: [
+    {
+      tmClass: 'constant',
+      match: new RegExp(/\d+(\.\d+)?/),
+    },
+  ],
+};
+
 export const ws: TokenClass = {
   name: 'whitespace',
   patterns: [
@@ -65,7 +81,7 @@ export const ws: TokenClass = {
 export class Tokenizer {
   tokenClasses: TokenClass[];
   constructor() {
-    this.tokenClasses = [comment, keyword, operator, ws, literal];
+    this.tokenClasses = [comment, keyword, ws, literal, number, operator];
   }
 
   get tmLang(): any {
@@ -106,7 +122,7 @@ export class Tokenizer {
             value: match[0],
             start: index,
             end: index + match[0].length,
-            type: tC.name,
+            type: tC.name as any, //TODO: should fix this
           });
           input = input.substring(match[0].length);
           index += match[0].length;

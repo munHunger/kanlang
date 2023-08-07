@@ -8,6 +8,27 @@ describe('tokenizer', () => {
     it('returns empty array on empty string', () =>
       expect(tokenizer.tokenize('')).toEqual([]));
 
+    describe('numbers', () => {
+      it('unsigned', () =>
+        expect(tokenizer.tokenize('5345')).toEqual([
+          {
+            value: '5345',
+            type: 'number',
+            start: 0,
+            end: 4,
+          },
+        ]));
+      it('decimal', () =>
+        expect(tokenizer.tokenize('42.35')).toEqual([
+          {
+            value: '42.35',
+            type: 'number',
+            start: 0,
+            end: 5,
+          },
+        ]));
+    });
+
     it('tokenizes single "if" keyword token', () =>
       expect(tokenizer.tokenize('if')).toEqual([
         {
