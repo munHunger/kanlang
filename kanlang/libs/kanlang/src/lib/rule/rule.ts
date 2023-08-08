@@ -32,25 +32,21 @@ export abstract class Rule {
       }, undefined);
   }
 
-  ruleBasedConsume(tokens: Token[]): AbstractSyntaxTree {
+  consume(tokens: Token[]): AbstractSyntaxTree {
     for (const [root, ...rule] of this.rules) {
       if (tokens.length < rule.length) continue;
       const consume = rule.map((part, i) => {
+        let consume: AbstractSyntaxTree;
         if (typeof part === 'string') {
           if (tokens[i].type === part)
             return new AbstractSyntaxTree(tokens[i], this);
-        } else if (part.ruleBasedConsume(tokens.slice(i)))
-          return part.ruleBasedConsume(tokens.slice(i)); //DRY
+        } else if ((consume = part.consume(tokens.slice(i)))) return consume;
       });
       if (consume.every((token) => token))
         return consume[root].setChildren(
           consume.slice(0, root).concat(consume.slice(root + 1))
         );
     }
-    return null;
-  }
-
-  consume(tokens: Token[]): AbstractSyntaxTree {
     return null;
   }
 }

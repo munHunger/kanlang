@@ -16,10 +16,4 @@ describe('arithmetic', () => {
     expect(
       new Arithmetic().consume(tokenizer.tokenize('1+2+3')).toAstString()
     ).toEqual('+(1, +(2, 3))'));
-  it('parses arithmetic chains', () =>
-    expect(
-      new Arithmetic()
-        .ruleBasedConsume(tokenizer.tokenize('1+2+3'))
-        .toAstString()
-    ).toEqual('+(1, +(2, 3))'));
 });
