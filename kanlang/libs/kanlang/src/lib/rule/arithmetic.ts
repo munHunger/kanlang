@@ -1,8 +1,15 @@
 import { AbstractSyntaxTree } from '../ast';
-import { Token } from '../tokenizer';
+import { Token, TokenType } from '../tokenizer';
 import { Rule } from './rule';
 
 export class Arithmetic extends Rule {
+  get rules(): (TokenType | Rule)[][] {
+    return [
+      ['number', this],
+      ['number', 'operator', 'number'],
+    ];
+  }
+
   consume(tokens: Token[]): AbstractSyntaxTree | undefined {
     if (tokens.length < 3) return null;
     if (tokens[1].type !== 'operator') return null;

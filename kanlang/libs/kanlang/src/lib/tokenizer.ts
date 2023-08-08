@@ -1,12 +1,13 @@
+export type TokenType =
+  | 'keyword'
+  | 'operator'
+  | 'comment'
+  | 'literal'
+  | 'whitespace'
+  | 'number';
 export type Token = {
   value: string;
-  type:
-    | 'keyword'
-    | 'operator'
-    | 'comment'
-    | 'literal'
-    | 'whitespace'
-    | 'number';
+  type: TokenType;
   start: number;
   end: number;
 };
