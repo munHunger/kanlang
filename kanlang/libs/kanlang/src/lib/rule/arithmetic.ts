@@ -3,10 +3,10 @@ import { Token, TokenType } from '../tokenizer';
 import { Rule } from './rule';
 
 export class Arithmetic extends Rule {
-  get rules(): (TokenType | Rule)[][] {
+  get rules(): [number, ...(TokenType | Rule)[]][] {
     return [
-      ['number', this],
-      ['number', 'operator', 'number'],
+      [1, 'number', 'operator', this],
+      [1, 'number', 'operator', 'number'],
     ];
   }
 

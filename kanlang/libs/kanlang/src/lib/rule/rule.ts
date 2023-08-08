@@ -2,15 +2,15 @@ import { AbstractSyntaxTree } from '../ast';
 import { Token, TokenType } from '../tokenizer';
 
 export abstract class Rule {
-  abstract get rules(): Array<Array<Rule | TokenType>>;
+  abstract get rules(): [number, ...Array<TokenType | Rule>][];
 
   get ruleName(): string {
     return (<any>this).constructor.name;
   }
 
-  toString() {
+  toGrammarString() {
     return this.rules
-      .map((rule) =>
+      .map(([root, ...rule]) =>
         rule
           .map((t) => {
             if (typeof t === 'string') {
@@ -33,18 +33,24 @@ export abstract class Rule {
   }
 
   ruleBasedConsume(tokens: Token[]): AbstractSyntaxTree {
-    for (const rule of this.rules) {
+    for (const [root, ...rule] of this.rules) {
       if (tokens.length < rule.length) continue;
       const consume = rule.map((part, i) => {
         if (typeof part === 'string') {
-          if (tokens[i].type === part) return new AbstractSyntaxTree(tokens[i]);
+          if (tokens[i].type === part)
+            return new AbstractSyntaxTree(tokens[i], this);
         } else if (part.ruleBasedConsume(tokens.slice(i)))
           return part.ruleBasedConsume(tokens.slice(i)); //DRY
       });
-      if (consume.every((token) => token)) return consume[0];
+      if (consume.every((token) => token))
+        return consume[root].setChildren(
+          consume.slice(0, root).concat(consume.slice(root + 1))
+        );
     }
     return null;
   }
 
-  abstract consume(tokens: Token[]): AbstractSyntaxTree;
+  consume(tokens: Token[]): AbstractSyntaxTree {
+    return null;
+  }
 }

@@ -1,6 +1,5 @@
 import { Tokenizer } from '../tokenizer';
 import { Arithmetic } from '.';
-import { AbstractSyntaxTree } from '../ast';
 const tokenizer = new Tokenizer();
 
 describe('arithmetic', () => {
@@ -19,10 +18,8 @@ describe('arithmetic', () => {
     ).toEqual('+(1, +(2, 3))'));
   it('parses arithmetic chains', () =>
     expect(
-      new Arithmetic().ruleBasedConsume(tokenizer.tokenize('1+2+3')).toString()
+      new Arithmetic()
+        .ruleBasedConsume(tokenizer.tokenize('1+2+3'))
+        .toAstString()
     ).toEqual('+(1, +(2, 3))'));
-
-  it('strings', () =>
-    //TODO: this 100% should not be here!
-    expect(new Arithmetic().toString()).toEqual('+(1, 2)'));
 });
