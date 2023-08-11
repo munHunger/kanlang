@@ -16,4 +16,8 @@ describe('arithmetic', () => {
     expect(
       new Arithmetic().consume(tokenizer.tokenize('1+2+3')).toAstString()
     ).toEqual('+(1, +(2, 3))'));
+  it('Handles arithmetic ordering', () =>
+    expect(
+      new Arithmetic().consume(tokenizer.tokenize('1-2+3/2*4')).toAstString()
+    ).toEqual('*(4, /(2, +(3, -(1, 2))))'));
 });
