@@ -6,6 +6,8 @@ type State = {
   rule: RuleType;
   ruleRef: Rule;
   from?: State;
+  meta?: any;
+  tree: (State | Token)[];
 };
 
 class StartingRule extends Rule {
@@ -53,7 +55,7 @@ function EARLEY_PARSE(words, grammar)
     end
     return chart
    */
-  parse(tokens: Token[]) {
+  parse(tokens: Token[]): (State | Token)[] {
     if (tokens.length == 0) throw new Error('cannot parse empty set');
     const stateSets: Array<Array<State>> = new Array(tokens.length + 1)
       .fill(undefined)
@@ -68,6 +70,7 @@ function EARLEY_PARSE(words, grammar)
         },
         rule: rule.slice(1) as RuleType,
         ruleRef: startingRule,
+        tree: [],
       })
     );
     for (let k = 0; k < stateSets.length; k++) {
@@ -75,7 +78,8 @@ function EARLEY_PARSE(words, grammar)
         const state = stateSets[k][n];
         if (state.position.rule == state.rule.length) {
           //finished state
-          this.complete(state, k, stateSets)
+          const completions = this.complete(state, k, stateSets);
+          completions
             .filter(
               //We don't need duplicates
               (newState) =>
@@ -105,16 +109,41 @@ function EARLEY_PARSE(words, grammar)
     const parseOrder = stateSets[stateSets.length - 1].filter(
       (v) => v.position.rule === v.rule.length && v.position.origin == 0
     );
-    const stacks = this.printStateSets(stateSets);
     const parsableWays = parseOrder.length;
-    console.log('done parsing ' + parsableWays);
+    if (parsableWays > 1)
+      console.log(
+        `\x1b[33m[WARN]\x1b[0m grammar is ambigous and could parse input in \x1b[36m${parsableWays}\x1b[0m different ways`
+      );
+    console.log(this.treeToString(parseOrder[0]));
+    if (parseOrder.length > 0) return parseOrder[0].tree;
+    throw new Error("could not parse. doesn't look like valid grammar to me");
+  }
+
+  private isState(object: any): object is State {
+    return object.ruleRef != null;
+  }
+  private treeToString(state: State, offset = 0): string {
+    const offsetString = new Array(offset).fill(' ').join('');
+    const name = state.ruleRef.ruleName;
+    const rules = state.tree
+      .map((part) =>
+        this.isState(part)
+          ? this.treeToString(part, offset)
+          : `${offsetString}'${part.value}'`
+      )
+      .join('\n')
+      .split('\n')
+      .map((line) => '  ' + line)
+      .join('\n');
+    return `${name}:[
+${rules}
+]`;
   }
 
   private isEqual(a: State, b: State): boolean {
     return (
-      a.ruleRef.ruleName == b.ruleRef.ruleName &&
-      a.position.origin == b.position.origin &&
-      a.position.rule == b.position.rule
+      JSON.stringify([a.position, a.rule, a.ruleRef.ruleName]) ===
+      JSON.stringify([b.position, b.rule, b.ruleRef.ruleName])
     );
   }
 
@@ -169,7 +198,7 @@ function EARLEY_PARSE(words, grammar)
     if (typeof nextElement == 'string' || Array.isArray(nextElement))
       throw new Error('Internal error. Prediction only works on rules');
 
-    return nextElement.rules.map((rule) => ({
+    const newStates = nextElement.rules.map((rule) => ({
       position: {
         rule: 0,
         origin: k,
@@ -177,7 +206,9 @@ function EARLEY_PARSE(words, grammar)
       rule: rule.slice(1) as RuleType,
       ruleRef: nextElement,
       from: state,
+      tree: [],
     }));
+    return newStates;
   }
 
   /**
@@ -206,6 +237,8 @@ procedure SCANNER((A → α•aβ, j), k, words)
           origin: state.position.origin,
           rule: state.position.rule + 1,
         },
+        meta: { state, tokens: [token] },
+        tree: state.tree.concat([token]),
       };
     }
   }
@@ -228,21 +261,20 @@ procedure COMPLETER((B → γ•, x), k)
     stateSets: Array<Array<State>>
   ): State[] {
     const completedRule = state.ruleRef.ruleName;
-    const completableRules = stateSets
-      .slice(0, k)
-      .flat()
-      .filter((s) => {
-        const nextElement = s.rule[s.position.rule];
-        return (
-          nextElement instanceof Rule && nextElement.ruleName == completedRule
-        );
-      });
+    const completableRules = stateSets[state.position.origin].filter((s) => {
+      const nextElement = s.rule[s.position.rule];
+      return (
+        nextElement instanceof Rule && nextElement.ruleName == completedRule
+      );
+    });
     return completableRules.map((s) => ({
       ...s,
       position: {
         ...s.position,
         rule: s.position.rule + 1,
       },
+      meta: [s.ruleRef.ruleName, s.meta, state.meta],
+      tree: s.tree.concat([state]),
     }));
   }
 }

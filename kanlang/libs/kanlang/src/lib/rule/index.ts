@@ -1,2 +1,2 @@
-export * from './arithmetic';
-export * from './expression';
+export { Sum, Product } from './arithmetic';
+//export * from './expression';
