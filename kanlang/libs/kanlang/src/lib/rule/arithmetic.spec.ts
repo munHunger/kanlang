@@ -1,23 +1,11 @@
-import { Tokenizer } from '../tokenizer';
-import { Arithmetic } from '.';
-const tokenizer = new Tokenizer();
+import { testAST } from '../testHelper.spec';
 
 describe('arithmetic', () => {
-  it('parses simple additions into an AST', () =>
-    expect(
-      new Arithmetic().consume(tokenizer.tokenize('1+2')).toAstString()
-    ).toEqual('+(1, 2)'));
-  it('parses simple additions into a parse tree', () =>
-    expect(
-      new Arithmetic().consume(tokenizer.tokenize('1+2')).toParseTreeString()
-    ).toEqual('Arithmetic:+(1, 2)'));
-
-  it('parses arithmetic chains', () =>
-    expect(
-      new Arithmetic().consume(tokenizer.tokenize('1+2+3')).toAstString()
-    ).toEqual('+(1, +(2, 3))'));
-  it('Handles arithmetic ordering', () =>
-    expect(
-      new Arithmetic().consume(tokenizer.tokenize('1-2+3/2*4')).toAstString()
-    ).toEqual('*(4, /(2, +(3, -(1, 2))))'));
+  testAST('parses simple additions into an AST', '1+2', '+(1, 2)');
+  testAST('parses arithmetic chains', '1+2+3', '+(1, +(2, 3))');
+  testAST(
+    'Handles arithmetic ordering',
+    '1-2+3/2*4',
+    '*(4, /(2, +(3, -(1, 2))))'
+  );
 });

@@ -15,11 +15,16 @@ import {
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
+  HandlerResult,
+  Command,
+  Hover,
+  MarkedString,
+  MarkupKind,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Tokenizer, TokenizerError } from '@kanlang/kanlang';
-import { Position } from 'vscode';
+import { TokenizerError, compile } from '@kanlang/kanlang';
+import { CompileError } from 'libs/kanlang/src/lib/compileError';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -32,7 +37,6 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
-const tokenizer = new Tokenizer();
 export async function validateTextDocument(
   textDocument: TextDocument
 ): Promise<void> {
@@ -40,11 +44,11 @@ export async function validateTextDocument(
 
   const diagnostics: Diagnostic[] = [];
   try {
-    tokenizer.tokenize(text);
+    compile(text);
   } catch (e) {
     if (e instanceof TokenizerError) {
       const diagnostic: Diagnostic = {
-        severity: DiagnosticSeverity.Warning,
+        severity: DiagnosticSeverity.Error,
         range: {
           start: {
             line: e.lineNumber,
@@ -56,7 +60,7 @@ export async function validateTextDocument(
           },
         },
         message: e.message,
-        source: 'tokenizer',
+        source: 'kanlang tokenizer',
       };
       if (hasDiagnosticRelatedInformationCapability) {
         diagnostic.relatedInformation = [
@@ -77,9 +81,25 @@ export async function validateTextDocument(
         ];
       }
       diagnostics.push(diagnostic);
+    } else if (e instanceof CompileError) {
+      const diagnostic: Diagnostic = {
+        severity: DiagnosticSeverity.Error,
+        range: {
+          start: {
+            line: e.lineNumber,
+            character: e.charIndex,
+          },
+          end: {
+            line: e.lineNumber,
+            character: e.charIndex + e.length,
+          },
+        },
+        message: e.message,
+        source: 'kanlang parser',
+      };
+      diagnostics.push(diagnostic);
     }
   }
-
   // Send the computed diagnostics to VSCode.
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
@@ -108,6 +128,7 @@ connection.onInitialize((params: InitializeParams) => {
       completionProvider: {
         resolveProvider: true,
       },
+      hoverProvider: true,
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -117,6 +138,7 @@ connection.onInitialize((params: InitializeParams) => {
       },
     };
   }
+
   return result;
 });
 
@@ -187,6 +209,31 @@ documents.onDidClose((e) => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent((change) => {
   validateTextDocument(change.document);
+});
+
+// connection.onCodeLens((_lens): HandlerResult<CodeLens[], void> => {
+//   return [
+//     new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), {
+//       title: 'save',
+//       command: 'command',
+//       tooltip: 'tooltip',
+//     }),
+//   ];
+// });
+
+connection.onHover((_hover) => {
+  return {
+    contents: {
+      /**
+       * The type of the Markup
+       */
+      kind: MarkupKind.Markdown,
+      /**
+       * The content itself
+       */
+      value: '*yo* hover text',
+    },
+  };
 });
 
 connection.onDidChangeWatchedFiles((_change) => {

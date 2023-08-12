@@ -1,7 +1,8 @@
+import { CompileError } from './compileError';
 import { Rule, RuleType } from './rule/rule';
 import { Token, TokenType } from './tokenizer';
 
-type State = {
+export type State = {
   position: { rule: number; origin: number };
   rule: RuleType;
   ruleRoot: number;
@@ -29,6 +30,9 @@ export class EarleyParser {
   }
 
   parse(tokens: Token[]): State & { toAstString: () => string } {
+    tokens = tokens.filter(
+      (token) => token.type !== 'whitespace' && token.type !== 'comment'
+    );
     if (tokens.length == 0) throw new Error('cannot parse empty set');
     const stateSets: Array<Array<State>> = new Array(tokens.length + 1)
       .fill(undefined)
@@ -93,7 +97,48 @@ export class EarleyParser {
         ...parseOrder[0],
         toAstString: () => this.toAstString(parseOrder[0]),
       };
-    throw new Error("could not parse. doesn't look like valid grammar to me");
+
+    this.reportError(stateSets, tokens);
+  }
+
+  private reportError(stateSets: Array<Array<State>>, tokens: Token[]) {
+    for (let k = stateSets.length - 1; k >= 0; k--) {
+      if (stateSets[k].length > 0) {
+        //Last state with data
+        const expectedNext: Set<string> = new Set();
+        for (let n = 0; n < stateSets[k].length; n++) {
+          const state = stateSets[k][n];
+          const nextElement = this.nextElementInState(state);
+          if (this.isTerminalToken(nextElement)) {
+            if (Array.isArray(nextElement)) expectedNext.add(nextElement[1]);
+            else expectedNext.add(nextElement);
+          } else {
+            const predictions = this.predict(state, k);
+            predictions
+              .filter(
+                //We don't need duplicates
+                (newState) =>
+                  !stateSets[k].find((set) => this.isEqual(set, newState))
+              )
+              .forEach((newState) => stateSets[k].push(newState));
+          }
+        }
+        const expectedTokens = `\n  Expected one of:\n${[...expectedNext]
+          .map((expected) => '    ' + expected)
+          .join('\n')}`;
+        if (k == tokens.length)
+          throw new CompileError(
+            tokens[k - 1],
+            `Syntax error.\n  Missing token.${expectedTokens}`
+          );
+        else
+          throw new CompileError(
+            tokens[k],
+            `Syntax error.\n  Unexpected token "${tokens[k].value}".${expectedTokens}`
+          );
+      }
+    }
+    throw new Error('The code exploded spectacularly');
   }
 
   private isState(object: any): object is State {
@@ -132,7 +177,7 @@ export class EarleyParser {
 
   private isTerminalToken(
     token: Rule | TokenType | [TokenType, string]
-  ): boolean {
+  ): token is TokenType | [TokenType, string] {
     return typeof token == 'string' || Array.isArray(token);
   }
 

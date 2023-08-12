@@ -1,88 +1,42 @@
-export type TokenType =
-  | 'keyword'
-  | 'operator'
-  | 'comment'
-  | 'literal'
-  | 'whitespace'
-  | 'number';
+import {
+  TokenType,
+  TokenClass,
+  comment,
+  keyword,
+  ws,
+  literal,
+  boolean,
+  number,
+  operator,
+  identifier,
+} from './tokenClasses';
+
+export { TokenType } from './tokenClasses';
+
 export type Token = {
   value: string;
   type: TokenType;
+  position: {
+    line: number;
+    character: number;
+  };
   start: number;
   end: number;
-};
-
-type TokenClass = {
-  name: string;
-  patterns: {
-    tmClass: string;
-    match: RegExp;
-  }[];
-};
-
-export const keyword: TokenClass = {
-  name: 'keyword',
-  patterns: [
-    {
-      tmClass: 'keyword.control.kanlang',
-      match: new RegExp('(if|else|for|while|return)'),
-    },
-  ],
-};
-export const operator: TokenClass = {
-  name: 'operator',
-  patterns: [
-    {
-      tmClass: 'keyword.operator.kanlang',
-      match: new RegExp('(\\+|=|!|-|\\*|/)'),
-    },
-  ],
-};
-
-export const comment: TokenClass = {
-  name: 'comment',
-  patterns: [
-    {
-      tmClass: 'comment.block',
-      match: new RegExp('//.*'),
-    },
-  ],
-};
-
-export const literal: TokenClass = {
-  name: 'literal',
-  patterns: [
-    {
-      tmClass: 'string',
-      match: new RegExp(/".*"/),
-    },
-  ],
-};
-
-export const number: TokenClass = {
-  name: 'number',
-  patterns: [
-    {
-      tmClass: 'constant',
-      match: new RegExp(/\d+(\.\d+)?/),
-    },
-  ],
-};
-
-export const ws: TokenClass = {
-  name: 'whitespace',
-  patterns: [
-    {
-      tmClass: 'whitespace.kanlang',
-      match: new RegExp(/\s/),
-    },
-  ],
 };
 
 export class Tokenizer {
   tokenClasses: TokenClass[];
   constructor() {
-    this.tokenClasses = [comment, keyword, ws, literal, number, operator];
+    this.tokenClasses = [
+      comment,
+      keyword,
+      ws,
+      literal,
+      number,
+      boolean,
+      operator,
+      identifier,
+    ];
   }
 
   get tmLang(): any {
@@ -123,6 +77,10 @@ export class Tokenizer {
             value: match[0],
             start: index,
             end: index + match[0].length,
+            position: {
+              line: lineNumber,
+              character,
+            },
             type: tC.name as any, //TODO: should fix this
           });
           input = input.substring(match[0].length);
