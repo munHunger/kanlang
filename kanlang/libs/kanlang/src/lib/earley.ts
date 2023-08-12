@@ -4,58 +4,31 @@ import { Token, TokenType } from './tokenizer';
 type State = {
   position: { rule: number; origin: number };
   rule: RuleType;
+  ruleRoot: number;
   ruleRef: Rule;
-  from?: State;
-  meta?: any;
   tree: (State | Token)[];
 };
 
 class StartingRule extends Rule {
-  constructor(private rule: [Rule, ...RuleType][]) {
+  constructor(private rule: [Rule, number, ...RuleType][]) {
     super();
   }
 
   get rules(): [number, ...RuleType][] {
-    return this.rule.map((r) => [0, ...r.slice(1)]);
+    return this.rule.map((r) => [r[1], ...(r.slice(2) as RuleType)]);
   }
 }
 
 export class EarleyParser {
-  rules: [Rule, ...RuleType][] = [];
+  rules: [Rule, number, ...RuleType][] = [];
 
   registerRule(rule: Rule) {
     rule.rules
-      .map((r) => [rule, ...r.slice(1)] as [Rule, ...RuleType])
+      .map((r) => [rule, ...r] as [Rule, number, ...RuleType])
       .forEach((r) => this.rules.push(r));
   }
 
-  /**
- * DECLARE ARRAY S;
-
-function INIT(words)
-    S ← CREATE_ARRAY(LENGTH(words) + 1)
-    for k ← from 0 to LENGTH(words) do
-        S[k] ← EMPTY_ORDERED_SET
-
- */
-  /**
-function EARLEY_PARSE(words, grammar)
-    INIT(words)
-    ADD_TO_SET((γ → •S, 0), S[0])
-    for k ← from 0 to LENGTH(words) do
-        for each state in S[k] do  // S[k] can expand during this loop
-            if not FINISHED(state) then
-                if NEXT_ELEMENT_OF(state) is a nonterminal then
-                    PREDICTOR(state, k, grammar)         // non_terminal
-                else do
-                    SCANNER(state, k, words)             // terminal
-            else do
-                COMPLETER(state, k)
-        end
-    end
-    return chart
-   */
-  parse(tokens: Token[]): (State | Token)[] {
+  parse(tokens: Token[]): State & { toAstString: () => string } {
     if (tokens.length == 0) throw new Error('cannot parse empty set');
     const stateSets: Array<Array<State>> = new Array(tokens.length + 1)
       .fill(undefined)
@@ -68,6 +41,7 @@ function EARLEY_PARSE(words, grammar)
           origin: 0,
           rule: 0,
         },
+        ruleRoot: rule[0],
         rule: rule.slice(1) as RuleType,
         ruleRef: startingRule,
         tree: [],
@@ -78,7 +52,7 @@ function EARLEY_PARSE(words, grammar)
         const state = stateSets[k][n];
         if (state.position.rule == state.rule.length) {
           //finished state
-          const completions = this.complete(state, k, stateSets);
+          const completions = this.complete(state, stateSets);
           completions
             .filter(
               //We don't need duplicates
@@ -114,30 +88,39 @@ function EARLEY_PARSE(words, grammar)
       console.log(
         `\x1b[33m[WARN]\x1b[0m grammar is ambigous and could parse input in \x1b[36m${parsableWays}\x1b[0m different ways`
       );
-    console.log(this.treeToString(parseOrder[0]));
-    if (parseOrder.length > 0) return parseOrder[0].tree;
+    if (parseOrder.length > 0)
+      return {
+        ...parseOrder[0],
+        toAstString: () => this.toAstString(parseOrder[0]),
+      };
     throw new Error("could not parse. doesn't look like valid grammar to me");
   }
 
   private isState(object: any): object is State {
     return object.ruleRef != null;
   }
-  private treeToString(state: State, offset = 0): string {
-    const offsetString = new Array(offset).fill(' ').join('');
-    const name = state.ruleRef.ruleName;
+  private treeToString(state: State): string {
+    const name = state.ruleRef.ruleName + state.ruleRoot;
     const rules = state.tree
       .map((part) =>
-        this.isState(part)
-          ? this.treeToString(part, offset)
-          : `${offsetString}'${part.value}'`
+        this.isState(part) ? this.treeToString(part) : `'${part.value}'`
       )
-      .join('\n')
-      .split('\n')
-      .map((line) => '  ' + line)
-      .join('\n');
-    return `${name}:[
-${rules}
-]`;
+      .join(', ');
+
+    return `${name}(${rules})`;
+  }
+
+  private toAstString(state: State): string {
+    const rules = state.tree.map((part) =>
+      this.isState(part) ? this.toAstString(part) : `${part.value}`
+    );
+
+    if (rules.length > 1)
+      return `${rules[state.ruleRoot]}(${rules
+        .slice(0, state.ruleRoot)
+        .concat(rules.slice(state.ruleRoot + 1))
+        .join(', ')})`;
+    return `${rules[state.ruleRoot]}`;
   }
 
   private isEqual(a: State, b: State): boolean {
@@ -153,12 +136,17 @@ ${rules}
     return typeof token == 'string' || Array.isArray(token);
   }
 
+  /**
+   * Note that this method is great for debuging the earley algorithm to figure out what it is doing in each set
+   * @param stateSets
+   * @returns
+   */
   private printStateSets(stateSets: Array<Array<State>>): string[][] {
     const stateName = (state?: State) => (state ? state.ruleRef.ruleName : '');
     return stateSets.map((stack) =>
       stack.map(
         (state) =>
-          `${stateName(state)} (${stateName(state.from)}) -> ${state.rule
+          `${stateName(state)} -> ${state.rule
             .map(
               (r, i) =>
                 (state.position.rule == i ? '•' : '') +
@@ -198,27 +186,24 @@ ${rules}
     if (typeof nextElement == 'string' || Array.isArray(nextElement))
       throw new Error('Internal error. Prediction only works on rules');
 
-    const newStates = nextElement.rules.map((rule) => ({
-      position: {
-        rule: 0,
-        origin: k,
-      },
-      rule: rule.slice(1) as RuleType,
-      ruleRef: nextElement,
-      from: state,
-      tree: [],
-    }));
-    return newStates;
+    return nextElement.rules.map(
+      (rule): State => ({
+        position: {
+          rule: 0,
+          origin: k,
+        },
+        ruleRoot: rule[0],
+        rule: rule.slice(1) as RuleType,
+        ruleRef: nextElement,
+        tree: [],
+      })
+    );
   }
 
   /**
-   * Scanning: If a is the next symbol in the input stream, 
+   * Scanning: If a is the next symbol in the input stream,
    * for every state in S(k) of the form (X → α • a β, j), add (X → α a • β, j) to S(k+1).
-   * 
-procedure SCANNER((A → α•aβ, j), k, words)
-    if j < LENGTH(words) and a ⊂ PARTS_OF_SPEECH(words[k]) then
-        ADD_TO_SET((A → αa•β, j), S[k+1])
-    end
+   *
    * @param state a state frame
    * @returns new state frames
    */
@@ -237,29 +222,20 @@ procedure SCANNER((A → α•aβ, j), k, words)
           origin: state.position.origin,
           rule: state.position.rule + 1,
         },
-        meta: { state, tokens: [token] },
         tree: state.tree.concat([token]),
       };
     }
   }
 
   /**
-   * Completion: For every state in S(k) of the form (Y → γ •, j), 
+   * Completion: For every state in S(k) of the form (Y → γ •, j),
    * find all states in S(j) of the form (X → α • Y β, i) and add (X → α Y • β, i) to S(k).
-   * 
-procedure COMPLETER((B → γ•, x), k)
-    for each (A → α•Bβ, j) in S[x] do
-        ADD_TO_SET((A → αB•β, j), S[k])
-    end
+   *
    * @param state a completed state in S(k) on the form (Y → γ •, j)
    * @param stateSets the full state set
    * @returns new state frames
    */
-  private complete(
-    state: State,
-    k: number,
-    stateSets: Array<Array<State>>
-  ): State[] {
+  private complete(state: State, stateSets: Array<Array<State>>): State[] {
     const completedRule = state.ruleRef.ruleName;
     const completableRules = stateSets[state.position.origin].filter((s) => {
       const nextElement = s.rule[s.position.rule];
@@ -273,7 +249,6 @@ procedure COMPLETER((B → γ•, x), k)
         ...s.position,
         rule: s.position.rule + 1,
       },
-      meta: [s.ruleRef.ruleName, s.meta, state.meta],
       tree: s.tree.concat([state]),
     }));
   }
