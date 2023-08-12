@@ -15,10 +15,6 @@ import {
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
-  HandlerResult,
-  Command,
-  Hover,
-  MarkedString,
   MarkupKind,
 } from 'vscode-languageserver/node';
 
