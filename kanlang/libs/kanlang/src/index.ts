@@ -9,9 +9,9 @@ const tokenizer = new Tokenizer();
 const parser = new EarleyParser();
 const semantics = new SemanticAnalyzer();
 Object.values(rules).map((rule) => parser.registerRule(new rule()));
-export function compile(input: string): SemanticState {
+export function compile(input: string) {
   const tokens = tokenizer.tokenize(input);
   const state = parser.parse(tokens);
   const sem = semantics.analyze(state);
-  return sem;
+  return { tokens, sem };
 }

@@ -9,6 +9,7 @@ import {
   number,
   operator,
   identifier,
+  punct,
 } from './tokenClasses';
 
 export { TokenType } from './tokenClasses';
@@ -36,6 +37,7 @@ export class Tokenizer {
       boolean,
       operator,
       identifier,
+      punct,
     ];
   }
 

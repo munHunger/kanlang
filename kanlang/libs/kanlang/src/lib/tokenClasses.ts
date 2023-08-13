@@ -6,6 +6,7 @@ export type TokenType =
   | 'whitespace'
   | 'boolean'
   | 'number'
+  | 'punct'
   | 'identifier';
 
 export type TokenClass = {
@@ -25,6 +26,17 @@ export const keyword: TokenClass = {
     },
   ],
 };
+
+export const punct: TokenClass = {
+  name: 'punct',
+  patterns: [
+    {
+      tmClass: 'support.other.kanlang',
+      match: new RegExp('(;)'),
+    },
+  ],
+};
+
 export const operator: TokenClass = {
   name: 'operator',
   patterns: [

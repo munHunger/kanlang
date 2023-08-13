@@ -223,15 +223,30 @@ connection.onHover((hover) => {
 
   try {
     const state = compile(text);
-    if (state.scope) {
-      return {
-        contents: {
-          kind: MarkupKind.Markdown,
-          value: Object.values(state.scope)
-            .map((v) => `*${v.name}*: ${v.variable.type}`)
-            .join('\n'),
-        },
-      };
+    const hoveredToken = state.tokens.find(
+      (token) =>
+        token.position.line == hover.position.line &&
+        hover.position.character >= token.position.character &&
+        hover.position.character <=
+          token.position.character + token.value.length
+    );
+    if (hoveredToken && hoveredToken.type == 'identifier') {
+      const scope = state.sem.scope; //TODO: this should be a recursive search
+      if (state.sem.scope) {
+        if (scope[hoveredToken.value]) {
+          return {
+            contents: {
+              kind: MarkupKind.Markdown,
+              value:
+                '```typescript\nlet ' +
+                hoveredToken.value +
+                ': ' +
+                scope[hoveredToken.value].variable.type +
+                '\n```',
+            },
+          };
+        }
+      }
     }
   } catch (e) {
     //shit the bed

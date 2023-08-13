@@ -36,12 +36,20 @@ export class SemanticAnalyzer {
 
     if (state.semantic) {
       const declaraction = state.semantic(semanticState.scope, state);
-      semanticState.scope[declaraction.name] = declaraction;
+      if (declaraction) semanticState.scope[declaraction.name] = declaraction;
     }
-    semanticState.tree = state.tree.map((child) =>
-      (child as any).value ? (child as Token) : this.analyze(child as State)
-    );
+    semanticState.tree = state.tree.map((child) => {
+      if (this.childIsToken(child)) return child;
+      const semanticChild = this.analyze(child, semanticState);
+      if (state.carryScope)
+        Object.assign(semanticState.scope, semanticChild.scope);
+      return semanticChild;
+    });
 
     return semanticState;
+  }
+
+  private childIsToken(child: Token | State): child is Token {
+    return (child as Token).value != undefined;
   }
 }

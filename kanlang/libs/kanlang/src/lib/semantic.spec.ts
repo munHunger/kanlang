@@ -16,4 +16,11 @@ describe('semantics', () => {
     );
     expect(tree.scope.a.variable.type).toEqual('num');
   });
+  it('handles multiple variables', () => {
+    const tree = semantic.analyze(
+      parser.parse(tokenizer.tokenize('let a = 1; let b = true;'))
+    );
+    expect(tree.scope.a.variable.type).toEqual('num');
+    expect(tree.scope.b.variable.type).toEqual('boolean');
+  });
 });
