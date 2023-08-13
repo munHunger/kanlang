@@ -4,8 +4,7 @@ import { SemanticAnalyzer } from './semantic';
 import { Tokenizer } from './tokenizer';
 const tokenizer = new Tokenizer();
 
-const parser = new EarleyParser();
-Object.values(rules).map((rule) => parser.registerRule(new rule()));
+const parser = new EarleyParser(new rules.Main());
 
 const semantic = new SemanticAnalyzer();
 

@@ -1,5 +1,5 @@
 import { CompileError } from './compileError';
-import { NewRuleType, Rule, RuleType } from './rule/rule';
+import { NewRuleType, Rule } from './rule/rule';
 import { Token, TokenType } from './tokenizer';
 
 export type State = NewRuleType & {
@@ -7,22 +7,8 @@ export type State = NewRuleType & {
   ruleRef: Rule;
   tree: (State | Token)[];
 };
-
-class StartingRule extends Rule {
-  get rules(): NewRuleType[] {
-    return this.rule;
-  }
-  constructor(private rule: NewRuleType[]) {
-    super();
-  }
-}
-
 export class EarleyParser {
-  rules: NewRuleType[] = [];
-
-  registerRule(rule: Rule) {
-    rule.rules.forEach((r) => this.rules.push(r));
-  }
+  constructor(private startingRule: Rule) {}
 
   parse(tokens: Token[]): State & { toAstString: () => string } {
     tokens = tokens.filter(
@@ -33,15 +19,14 @@ export class EarleyParser {
       .fill(undefined)
       .map(() => []);
 
-    const startingRule = new StartingRule(this.rules);
-    startingRule.rules.forEach((rule) =>
+    this.startingRule.rules.forEach((rule) =>
       stateSets[0].push({
         ...rule,
         position: {
           origin: 0,
           rule: 0,
         },
-        ruleRef: startingRule,
+        ruleRef: this.startingRule,
         tree: [],
       })
     );

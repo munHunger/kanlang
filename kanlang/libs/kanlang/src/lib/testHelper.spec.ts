@@ -1,12 +1,15 @@
 import { EarleyParser } from './earley';
-import * as rules from './rule';
+import { Rule } from './rule/rule';
 import { Tokenizer } from './tokenizer';
 const tokenizer = new Tokenizer();
 
-const parser = new EarleyParser();
-Object.values(rules).map((rule) => parser.registerRule(new rule()));
-
-export function testAST(message: string, input: string, expected: string) {
+export function testAST(
+  message: string,
+  startingRule: Rule,
+  input: string,
+  expected: string
+) {
+  const parser = new EarleyParser(startingRule);
   it(message + ':' + input, () =>
     expect(parser.parse(tokenizer.tokenize(input)).toAstString()).toEqual(
       expected

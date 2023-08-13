@@ -32,7 +32,7 @@ export const punct: TokenClass = {
   patterns: [
     {
       tmClass: 'support.other.kanlang',
-      match: new RegExp('(;)'),
+      match: new RegExp('(;|\\(|\\)|{|})'),
     },
   ],
 };
