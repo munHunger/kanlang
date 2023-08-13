@@ -1,28 +1,58 @@
 import { TokenType } from '../tokenizer';
-import { Rule } from './rule';
+import { NewRuleType, Rule } from './rule';
 
 export class Arithmetic extends Rule {
-  get rules(): [number, ...(TokenType | Rule)[]][] {
-    return [[0, new Sum()]];
+  get rules(): NewRuleType[] {
+    return [
+      {
+        root: 0,
+        parts: [new Sum()],
+        meta: () => ({ type: 'num' }),
+      },
+    ];
   }
 }
 
 export class Sum extends Rule {
-  get rules(): [number, ...Array<TokenType | [TokenType, string] | Rule>][] {
+  get rules(): NewRuleType[] {
     return [
-      [1, new Product(), ['operator', '+'], this],
-      [1, new Product(), ['operator', '-'], this],
-      [0, new Product()],
+      {
+        root: 1,
+        parts: [new Product(), ['operator', '+'], this],
+        meta: () => ({ type: 'num' }),
+      },
+      {
+        root: 1,
+        parts: [new Product(), ['operator', '-'], this],
+        meta: () => ({ type: 'num' }),
+      },
+      {
+        root: 0,
+        parts: [new Product()],
+        meta: () => ({ type: 'num' }),
+      },
     ];
   }
 }
 
 export class Product extends Rule {
-  get rules(): [number, ...Array<TokenType | [TokenType, string] | Rule>][] {
+  get rules(): NewRuleType[] {
     return [
-      [1, this, ['operator', '*'], 'number'],
-      [1, this, ['operator', '/'], 'number'],
-      [0, 'number'],
+      {
+        root: 1,
+        parts: [this, ['operator', '*'], 'number'],
+        meta: () => ({ type: 'num' }),
+      },
+      {
+        root: 1,
+        parts: [this, ['operator', '/'], 'number'],
+        meta: () => ({ type: 'num' }),
+      },
+      {
+        root: 0,
+        parts: ['number'],
+        meta: () => ({ type: 'num' }),
+      },
     ];
   }
 }

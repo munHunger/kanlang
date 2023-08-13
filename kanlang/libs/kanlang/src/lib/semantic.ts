@@ -7,8 +7,21 @@ type MetaData = {
   constant: boolean;
 };
 
+export type Declaration = {
+  name: string;
+  variable?: {
+    primitive: boolean;
+    constant: boolean;
+    type: string;
+  };
+  type?: {
+    // empty for now but should hold our typesystem
+  };
+};
+
 type SemanticState = Omit<State, 'tree'> & {
   meta: MetaData;
+  scope: Record<string, Declaration>;
   tree: (SemanticState | Token)[];
 };
 

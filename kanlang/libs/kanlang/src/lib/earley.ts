@@ -1,32 +1,27 @@
 import { CompileError } from './compileError';
-import { Rule, RuleType } from './rule/rule';
+import { NewRuleType, Rule, RuleType } from './rule/rule';
 import { Token, TokenType } from './tokenizer';
 
-export type State = {
+export type State = NewRuleType & {
   position: { rule: number; origin: number };
-  rule: RuleType;
-  ruleRoot: number;
   ruleRef: Rule;
   tree: (State | Token)[];
 };
 
 class StartingRule extends Rule {
-  constructor(private rule: [Rule, number, ...RuleType][]) {
-    super();
+  get rules(): NewRuleType[] {
+    return this.rule;
   }
-
-  get rules(): [number, ...RuleType][] {
-    return this.rule.map((r) => [r[1], ...(r.slice(2) as RuleType)]);
+  constructor(private rule: NewRuleType[]) {
+    super();
   }
 }
 
 export class EarleyParser {
-  rules: [Rule, number, ...RuleType][] = [];
+  rules: NewRuleType[] = [];
 
   registerRule(rule: Rule) {
-    rule.rules
-      .map((r) => [rule, ...r] as [Rule, number, ...RuleType])
-      .forEach((r) => this.rules.push(r));
+    rule.rules.forEach((r) => this.rules.push(r));
   }
 
   parse(tokens: Token[]): State & { toAstString: () => string } {
@@ -41,12 +36,11 @@ export class EarleyParser {
     const startingRule = new StartingRule(this.rules);
     startingRule.rules.forEach((rule) =>
       stateSets[0].push({
+        ...rule,
         position: {
           origin: 0,
           rule: 0,
         },
-        ruleRoot: rule[0],
-        rule: rule.slice(1) as RuleType,
         ruleRef: startingRule,
         tree: [],
       })
@@ -54,7 +48,7 @@ export class EarleyParser {
     for (let k = 0; k < stateSets.length; k++) {
       for (let n = 0; n < stateSets[k].length; n++) {
         const state = stateSets[k][n];
-        if (state.position.rule == state.rule.length) {
+        if (this.isComplete(state)) {
           //finished state
           const completions = this.complete(state, stateSets);
           completions
@@ -85,7 +79,7 @@ export class EarleyParser {
     }
 
     const parseOrder = stateSets[stateSets.length - 1].filter(
-      (v) => v.position.rule === v.rule.length && v.position.origin == 0
+      (v) => v.position.rule === v.parts.length && v.position.origin == 0
     );
     const parsableWays = parseOrder.length;
     if (parsableWays > 1)
@@ -112,7 +106,7 @@ export class EarleyParser {
           if (this.isTerminalToken(nextElement)) {
             if (Array.isArray(nextElement)) expectedNext.add(nextElement[1]);
             else expectedNext.add(nextElement);
-          } else {
+          } else if (!this.isComplete(state)) {
             const predictions = this.predict(state, k);
             predictions
               .filter(
@@ -141,11 +135,15 @@ export class EarleyParser {
     throw new Error('The code exploded spectacularly');
   }
 
+  private isComplete(state: State): boolean {
+    return state.position.rule == state.parts.length;
+  }
+
   private isState(object: any): object is State {
     return object.ruleRef != null;
   }
   private treeToString(state: State): string {
-    const name = state.ruleRef.ruleName + state.ruleRoot;
+    const name = state.ruleRef.ruleName + state.root;
     const rules = state.tree
       .map((part) =>
         this.isState(part) ? this.treeToString(part) : `'${part.value}'`
@@ -161,17 +159,17 @@ export class EarleyParser {
     );
 
     if (rules.length > 1)
-      return `${rules[state.ruleRoot]}(${rules
-        .slice(0, state.ruleRoot)
-        .concat(rules.slice(state.ruleRoot + 1))
+      return `${rules[state.root]}(${rules
+        .slice(0, state.root)
+        .concat(rules.slice(state.root + 1))
         .join(', ')})`;
-    return `${rules[state.ruleRoot]}`;
+    return `${rules[state.root]}`;
   }
 
   private isEqual(a: State, b: State): boolean {
     return (
-      JSON.stringify([a.position, a.rule, a.ruleRef.ruleName]) ===
-      JSON.stringify([b.position, b.rule, b.ruleRef.ruleName])
+      JSON.stringify([a.position, a.parts, a.ruleRef.ruleName]) ===
+      JSON.stringify([b.position, b.parts, b.ruleRef.ruleName])
     );
   }
 
@@ -191,12 +189,12 @@ export class EarleyParser {
     return stateSets.map((stack) =>
       stack.map(
         (state) =>
-          `${stateName(state)} -> ${state.rule
+          `${stateName(state)} -> ${state.parts
             .map(
               (r, i) =>
                 (state.position.rule == i ? '•' : '') +
                 this.ruleToName(r) +
-                (state.position.rule == state.rule.length &&
+                (state.position.rule == state.parts.length &&
                 state.position.rule == i + 1
                   ? '•'
                   : '')
@@ -213,7 +211,7 @@ export class EarleyParser {
   }
 
   private nextElementInState(state: State) {
-    return state.rule[state.position.rule];
+    return state.parts[state.position.rule];
   }
 
   /**
@@ -233,12 +231,11 @@ export class EarleyParser {
 
     return nextElement.rules.map(
       (rule): State => ({
+        ...rule,
         position: {
           rule: 0,
           origin: k,
         },
-        ruleRoot: rule[0],
-        rule: rule.slice(1) as RuleType,
         ruleRef: nextElement,
         tree: [],
       })
@@ -283,7 +280,7 @@ export class EarleyParser {
   private complete(state: State, stateSets: Array<Array<State>>): State[] {
     const completedRule = state.ruleRef.ruleName;
     const completableRules = stateSets[state.position.origin].filter((s) => {
-      const nextElement = s.rule[s.position.rule];
+      const nextElement = s.parts[s.position.rule];
       return (
         nextElement instanceof Rule && nextElement.ruleName == completedRule
       );
