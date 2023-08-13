@@ -27,7 +27,7 @@ export class VariableAssignment extends Rule {
           variable: {
             constant: false,
             primitive: true,
-            type: 'int',
+            type: (state.tree[3] as State).meta(scope, state).type,
           },
         }),
       },

@@ -9,6 +9,11 @@ export class Expression extends Rule {
         parts: [new Arithmetic()],
         meta: () => ({ type: 'num' }),
       },
+      {
+        root: 0,
+        parts: ['boolean'],
+        meta: () => ({ type: 'boolean' }),
+      },
     ];
   }
 }

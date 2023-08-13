@@ -21,6 +21,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { TokenizerError, compile } from '@kanlang/kanlang';
 import { CompileError } from 'libs/kanlang/src/lib/compileError';
+import { SemanticState } from 'libs/kanlang/src/lib/semantic';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -217,19 +218,24 @@ documents.onDidChangeContent((change) => {
 //   ];
 // });
 
-connection.onHover((_hover) => {
-  return {
-    contents: {
-      /**
-       * The type of the Markup
-       */
-      kind: MarkupKind.Markdown,
-      /**
-       * The content itself
-       */
-      value: '*yo* hover text',
-    },
-  };
+connection.onHover((hover) => {
+  const text = documents.get(hover.textDocument.uri).getText();
+
+  try {
+    const state = compile(text);
+    if (state.scope) {
+      return {
+        contents: {
+          kind: MarkupKind.Markdown,
+          value: Object.values(state.scope)
+            .map((v) => `*${v.name}*: ${v.variable.type}`)
+            .join('\n'),
+        },
+      };
+    }
+  } catch (e) {
+    //shit the bed
+  }
 });
 
 connection.onDidChangeWatchedFiles((_change) => {

@@ -1,4 +1,3 @@
-import { TokenType } from '../tokenizer';
 import { NewRuleType, Rule } from './rule';
 
 export class Arithmetic extends Rule {
