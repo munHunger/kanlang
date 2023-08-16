@@ -1,23 +1,23 @@
-import { testAST } from '../testHelper.spec';
+import { testToString } from '../testHelper.spec';
 import { Arithmetic } from './arithmetic';
 
 describe('arithmetic', () => {
-  testAST(
+  testToString(
     'parses simple additions into an AST',
     new Arithmetic(),
     '1+2',
     '+(1, 2)'
   );
-  testAST(
+  testToString(
     'parses arithmetic chains',
     new Arithmetic(),
     '1+2+3',
     '+(1, +(2, 3))'
   );
-  testAST(
+  testToString(
     'Handles arithmetic ordering',
     new Arithmetic(),
     '1-2+3/2*4',
-    '*(4, /(2, +(3, -(1, 2))))'
+    '-(1, +(2, *(/(3, 2), 4)))'
   );
 });

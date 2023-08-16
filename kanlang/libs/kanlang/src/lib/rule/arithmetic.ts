@@ -1,5 +1,6 @@
 import { CompileError } from '../compileError';
 import { levenshteinDistance } from '../levenstein';
+import { ParseTree } from '../parseTree';
 import { Token } from '../tokenizer';
 import { NewRuleType, Rule } from './rule';
 
@@ -10,6 +11,7 @@ export class Arithmetic extends Rule {
         root: 0,
         parts: [new Sum()],
         meta: () => ({ type: 'num' }),
+        invisibleNode: true,
       },
     ];
   }
@@ -22,16 +24,27 @@ export class Sum extends Rule {
         root: 1,
         parts: [new Product(), ['operator', '+'], this],
         meta: () => ({ type: 'num' }),
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `+(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+        },
       },
       {
         root: 1,
         parts: [new Product(), ['operator', '-'], this],
         meta: () => ({ type: 'num' }),
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `-(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+        },
       },
       {
         root: 0,
         parts: [new Product()],
         meta: () => ({ type: 'num' }),
+        invisibleNode: true,
       },
     ];
   }
@@ -44,16 +57,27 @@ export class Product extends Rule {
         root: 1,
         parts: [this, ['operator', '*'], new Atom()],
         meta: () => ({ type: 'num' }),
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `*(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+        },
       },
       {
         root: 1,
         parts: [this, ['operator', '/'], new Atom()],
         meta: () => ({ type: 'num' }),
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `/(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+        },
       },
       {
         root: 0,
         parts: [new Atom()],
         meta: () => ({ type: 'num' }),
+        invisibleNode: true,
       },
     ];
   }
@@ -66,11 +90,25 @@ export class Atom extends Rule {
         root: 0,
         parts: ['number'],
         meta: () => ({ type: 'num' }),
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return this.tokenValue(0);
+          }
+        },
       },
       {
         root: 0,
         parts: ['identifier'],
         meta: () => ({ type: 'num' }), //Figure out semantically if the types match
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `<${this.tokenValue(0)}>`;
+          }
+          validate(): void {
+            if (!this.getDeclaration(this.tokenValue(0)))
+              this.addError(`variable ${this.tokenValue(0)} is not defined`);
+          }
+        },
         semantic: (scope, state) => {
           const currentToken = state.tree[0] as Token;
           const variable = scope[currentToken.value];

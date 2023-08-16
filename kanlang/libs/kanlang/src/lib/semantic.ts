@@ -1,4 +1,5 @@
 import { State } from './earley';
+import { ParseTree } from './parseTree';
 import { Token } from './tokenizer';
 
 type MetaData = {
@@ -26,27 +27,31 @@ export type SemanticState = Omit<State, 'tree'> & {
 };
 
 export class SemanticAnalyzer {
-  //Should do something here
-  analyze(state: State, parent?: SemanticState): SemanticState {
-    const semanticState: SemanticState = {
-      ...state,
-      scope: JSON.parse(JSON.stringify(parent?.scope || {})), //deep clone the state
-      tree: [],
-    };
-
-    if (state.semantic) {
-      const declaraction = state.semantic(semanticState.scope, state);
-      if (declaraction) semanticState.scope[declaraction.name] = declaraction;
+  analyze(state: State, parent?: ParseTree): ParseTree {
+    if (state.invisibleNode) {
+      if (state.parts.length > 1)
+        throw new Error('cannot have invisible nodes with more than one child');
+      if (this.childIsToken(state.tree[0]))
+        throw new Error('cannot be invisible to a token');
+      return this.analyze(state.tree[0], parent);
     }
-    semanticState.tree = state.tree.map((child) => {
-      if (this.childIsToken(child)) return child;
-      const semanticChild = this.analyze(child, semanticState);
-      if (state.carryScope)
-        Object.assign(semanticState.scope, semanticChild.scope);
-      return semanticChild;
-    });
+    if (!state.invisibleNode && !state.treeClass) {
+      throw new Error(
+        `rule ${state.ruleRef.ruleName} is incorrectly setup. It is not invisible, but missing a tree class`
+      );
+    }
+    const tree = new state.treeClass(state.ruleRef, state, parent);
 
-    return semanticState;
+    state.tree
+      .filter((child) => !this.childIsToken(child))
+      .map((child) => this.analyze(child as State, tree))
+      .forEach((child) => tree.addChild(child));
+
+    tree.validate();
+    if (ParseTree.errors.length > 0) {
+      console.log('errors', ParseTree.errors);
+    }
+    return tree;
   }
 
   private childIsToken(child: Token | State): child is Token {

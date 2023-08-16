@@ -24,7 +24,7 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": { "no-var": "off" }
     },
     {
       "files": ["*.js", "*.jsx"],

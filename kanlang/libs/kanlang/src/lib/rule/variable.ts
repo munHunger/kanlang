@@ -1,18 +1,12 @@
 import { State } from '../earley';
+import { ParseTree } from '../parseTree';
 import { Declaration } from '../semantic';
 import { Token, TokenType } from '../tokenizer';
 import { Expression } from './';
-import { Rule, RuleType } from './rule';
+import { NewRuleType, Rule, RuleType } from './rule';
 
 export class VariableAssignment extends Rule {
-  get rules(): {
-    root: number;
-    parts: RuleType;
-    semantic?: (
-      scope: Record<string, Declaration>,
-      state: State
-    ) => Declaration;
-  }[] {
+  get rules(): NewRuleType[] {
     return [
       {
         root: 0,
@@ -22,12 +16,17 @@ export class VariableAssignment extends Rule {
           ['operator', '='],
           new Expression(),
         ],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `${this.tokenValue(1)} := ${this.children[0].toString()}`;
+          }
+        },
         semantic: (scope, state) => ({
           name: (state.tree[1] as Token).value,
           variable: {
             constant: false,
             primitive: true,
-            type: (state.tree[3] as State).meta(scope, state).type,
+            type: (state.tree[3] as State).meta(state).type,
           },
         }),
       },

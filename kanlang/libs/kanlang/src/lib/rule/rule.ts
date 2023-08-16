@@ -1,4 +1,5 @@
 import { State } from '../earley';
+import { ParseTree } from '../parseTree';
 import { Declaration } from '../semantic';
 import { TokenType } from '../tokenizer';
 
@@ -10,8 +11,10 @@ export type NewRuleType = {
     scope: Record<string, Declaration>,
     state: State
   ) => Declaration | undefined;
+  invisibleNode?: boolean;
+  treeClass?: typeof ParseTree;
   carryScope?: boolean;
-  meta?: (scope: Record<string, Declaration>, state: State) => { type: string };
+  meta?: (state: State) => { type: string };
 };
 export abstract class Rule {
   abstract get rules(): NewRuleType[];

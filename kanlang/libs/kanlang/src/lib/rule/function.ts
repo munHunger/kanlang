@@ -17,11 +17,13 @@ export class Function extends Rule {
           ['punct', '('],
           new ArgumentArray(),
           ['punct', ')'],
+          ['punct', ':'],
+          'identifier',
           ['punct', '{'],
           new Body(),
           ['punct', '}'],
         ],
-        carryScope: false,
+        carryScope: true,
       },
     ];
   }
@@ -55,6 +57,10 @@ export class Argument extends Rule {
         root: 0,
         parts: ['identifier', ['punct', ':'], 'identifier'],
         carryScope: true,
+        meta: (state) => ({
+          name: getValue(state.tree[0]),
+          type: getValue(state.tree[2]),
+        }),
         semantic: (scope, state) => ({
           name: (state.tree[0] as Token).value,
           variable: {
@@ -66,4 +72,7 @@ export class Argument extends Rule {
       },
     ];
   }
+}
+function getValue(part: State | Token): string {
+  return (part as Token).value; //lets assume this is safe
 }
