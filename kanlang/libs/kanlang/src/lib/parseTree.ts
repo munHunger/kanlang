@@ -9,7 +9,7 @@ export class ParseTree {
   children: ParseTree[] = [];
   scope: Record<string, Declaration> = {};
   constructor(
-    private rule: Rule,
+    public rule: Rule,
     private state: State,
     public parent?: ParseTree
   ) {}
@@ -30,6 +30,13 @@ export class ParseTree {
 
   tokenValue(index: number): string {
     return (this.state.tree[index] as Token).value;
+  }
+
+  getParentOfType(c: typeof Rule): ParseTree | undefined {
+    if (this.parent) {
+      if (this.parent.rule instanceof c) return this.parent;
+      else return this.parent.getParentOfType(c);
+    }
   }
 
   toString(): string {

@@ -7,13 +7,19 @@ describe('function', () => {
     new Function(),
     '(a: num, b: boolean):num {return a + 1;}',
     [
-      'fn (a: num, b: boolean) [a: num, b: boolean]',
+      'fn (a: num, b: boolean): num [a: num, b: boolean]',
       'return +(<a>, 1) [a: num, b: boolean]',
     ].join('\n')
   );
+  testThrows(
+    'throws error if return type is not function type',
+    new Function(),
+    '():num {return true;}',
+    /.*type missmatch.*return.*boolean.*expecting num.*/
+  );
 
   testThrows(
-    'function calls work',
+    'it throws errors if you mismatch types from argument',
     new Function(),
     '(a: num, b: boolean):num {return a + b;}',
     /.*b.*not.*numeric/

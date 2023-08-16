@@ -33,3 +33,7 @@ export function testThrows(
     ).toThrow(expectedError)
   );
 }
+//Need to have a test here (fail otherwise) and don't want this to be a "normal" file
+describe('dummy', () => {
+  it('1+1', () => expect(true).toBeTruthy());
+});

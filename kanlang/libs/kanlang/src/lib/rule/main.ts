@@ -7,12 +7,10 @@ export class Main extends Rule {
       {
         root: 0,
         parts: [this, new Function()],
-        carryScope: true,
       },
       {
         root: 0,
         parts: [new Function()],
-        carryScope: true,
       },
     ];
   }

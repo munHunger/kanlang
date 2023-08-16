@@ -8,7 +8,6 @@ export class Body extends Rule {
       {
         root: 0,
         parts: [new Expression(), ['punct', ';']],
-        carryScope: true,
         treeClass: class extends ParseTree {
           toString(): string {
             return `${this.children[0].toString()} ${this.printScope()}`;
@@ -18,7 +17,6 @@ export class Body extends Rule {
       {
         root: 0,
         parts: [this, new Expression(), ['punct', ';']],
-        carryScope: true,
       },
     ];
   }

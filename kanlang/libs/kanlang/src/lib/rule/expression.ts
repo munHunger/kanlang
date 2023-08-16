@@ -1,5 +1,6 @@
 import { ParseTree } from '../parseTree';
 import { Arithmetic } from './arithmetic';
+import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { VariableAssignment } from './variable';
 
@@ -13,24 +14,37 @@ export class Expression extends Rule {
           toString(): string {
             return `return ${this.children[0].toString()}`;
           }
+          validate(): void {
+            const fn = this.getParentOfType(Function) as FunctionParseTree;
+            if (!fn) this.addError('cannot return outside of a function');
+            const returnedType = this.children[0].type();
+            if (fn.returnType != returnedType)
+              this.addError(
+                `type missmatch. Cannot return ${returnedType} in function expecting ${fn.returnType}`
+              );
+          }
         },
       },
       {
         root: 0,
         parts: [new Arithmetic()],
-        meta: () => ({ type: 'num' }),
         invisibleNode: true,
       },
       {
         root: 0,
         parts: ['boolean'],
-        meta: () => ({ type: 'boolean' }),
+        treeClass: class extends ParseTree {
+          type(): string {
+            return 'boolean';
+          }
+          toString(): string {
+            return `${this.tokenValue(0)}`;
+          }
+        },
       },
       {
         root: 0,
         parts: [new VariableAssignment()],
-        meta: () => ({ type: 'void' }), //void or type of variable?
-        carryScope: true,
         invisibleNode: true,
       },
     ];

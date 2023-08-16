@@ -28,14 +28,6 @@ export class VariableAssignment extends Rule {
             });
           }
         },
-        semantic: (scope, state) => ({
-          name: (state.tree[1] as Token).value,
-          variable: {
-            constant: false,
-            primitive: true,
-            type: (state.tree[3] as State).meta(state).type,
-          },
-        }),
       },
     ];
   }
