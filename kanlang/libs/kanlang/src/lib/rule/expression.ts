@@ -1,3 +1,4 @@
+import { ParseTree } from '../parseTree';
 import { Arithmetic } from './arithmetic';
 import { NewRuleType, Rule } from './rule';
 import { VariableAssignment } from './variable';
@@ -8,6 +9,11 @@ export class Expression extends Rule {
       {
         root: 0,
         parts: [['keyword', 'return'], this],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `return ${this.children[0].toString()}`;
+          }
+        },
       },
       {
         root: 0,

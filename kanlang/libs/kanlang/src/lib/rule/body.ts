@@ -11,7 +11,7 @@ export class Body extends Rule {
         carryScope: true,
         treeClass: class extends ParseTree {
           toString(): string {
-            return 'body';
+            return `${this.children[0].toString()} ${this.printScope()}`;
           }
         },
       },

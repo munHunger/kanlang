@@ -11,12 +11,21 @@ export class ParseTree {
   constructor(
     private rule: Rule,
     private state: State,
-    private parent?: ParseTree
+    public parent?: ParseTree
   ) {}
 
   getDeclaration(name: string): Declaration | undefined {
     if (this.scope[name]) return this.scope[name];
     else if (this.parent) return this.parent.getDeclaration(name);
+  }
+
+  getAllDeclarationsInScope(): Declaration[] {
+    if (this.parent) {
+      return Object.values(this.scope).concat(
+        this.parent.getAllDeclarationsInScope()
+      );
+    }
+    return Object.values(this.scope);
   }
 
   tokenValue(index: number): string {
@@ -27,17 +36,42 @@ export class ParseTree {
     return '';
   }
 
-  addToState(declaration: Declaration) {
-    if (!this.parent) throw new Error("can't add state to root node");
-    this.parent.state[declaration.name] = declaration;
+  printScope(): string {
+    return `[${this.getAllDeclarationsInScope()
+      .map((d) => `${d.name}: ${d.type}`)
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ')}]`;
+  }
+
+  type(): string {
+    return '';
+  }
+
+  addToScope(declaration: Declaration) {
+    if (!this.parent) {
+      this.scope[declaration.name] = declaration;
+    } else {
+      this.parent.scope[declaration.name] = declaration;
+    }
+  }
+
+  mergeParentScope() {
+    Object.values(this.scope).forEach((v) => this.addToScope(v));
   }
 
   validate() {
     //Left empty, to be implemented further down
   }
 
+  get allTokens(): Token[] {
+    return this.state.tree
+      .filter((part): part is Token => (part as Token).value != undefined)
+      .concat(this.children.map((child) => child.allTokens).flat())
+      .sort((a, b) => a.start - b.start);
+  }
+
   addError(message: string) {
-    ParseTree.errors.push(new CompileError(null, message));
+    ParseTree.errors.push(new CompileError(this.allTokens, message));
   }
 
   addChild(child: ParseTree) {

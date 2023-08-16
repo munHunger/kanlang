@@ -44,12 +44,17 @@ export class SemanticAnalyzer {
 
     state.tree
       .filter((child) => !this.childIsToken(child))
-      .map((child) => this.analyze(child as State, tree))
+      .map((child) => {
+        return this.analyze(child as State, tree);
+      })
       .forEach((child) => tree.addChild(child));
 
     tree.validate();
     if (ParseTree.errors.length > 0) {
-      console.log('errors', ParseTree.errors);
+      if (!parent) {
+        //analysis is done
+        throw new Error(ParseTree.errors.map((e) => e.message).join('\n')); //FIXME: allow for multiple errors
+      }
     }
     return tree;
   }

@@ -14,7 +14,7 @@ import {
 
 export { TokenType } from './tokenClasses';
 
-export type Token = {
+export interface Token {
   value: string;
   type: TokenType;
   position: {
@@ -23,7 +23,7 @@ export type Token = {
   };
   start: number;
   end: number;
-};
+}
 
 export class Tokenizer {
   tokenClasses: TokenClass[];

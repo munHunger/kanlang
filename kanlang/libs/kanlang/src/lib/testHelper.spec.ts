@@ -19,3 +19,17 @@ export function testToString(
     ).toEqual(expected)
   );
 }
+
+export function testThrows(
+  message: string,
+  startingRule: Rule,
+  input: string,
+  expectedError: RegExp
+) {
+  const parser = new EarleyParser(startingRule);
+  it(message + ':' + input, () =>
+    expect(() =>
+      semantic.analyze(parser.parse(tokenizer.tokenize(input))).toString()
+    ).toThrow(expectedError)
+  );
+}
