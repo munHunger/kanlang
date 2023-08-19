@@ -18,7 +18,7 @@ describe('earley', () => {
     );
   });
   it('throws meaningful errors where there is a wildly incorrect input', () => {
-    expect(() => parser.parse(tokenizer.tokenize('let a = 1 0+ true'))).toThrow(
+    expect(() => parser.parse(tokenizer.tokenize('a := 1 0+ true'))).toThrow(
       CompileError
     );
   });

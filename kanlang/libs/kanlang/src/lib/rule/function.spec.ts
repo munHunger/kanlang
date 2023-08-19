@@ -21,7 +21,7 @@ describe('function', () => {
   testThrows(
     'throws error if missing return statement in function',
     new Function(),
-    '(a:num):num {let b = a + 1;}',
+    '(a:num):num {b := a + 1;}',
     /.*missing.*return.*statement/
   );
 
