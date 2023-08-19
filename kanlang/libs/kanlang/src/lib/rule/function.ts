@@ -1,5 +1,6 @@
 import { ParseTree } from '../parseTree';
 import { Body } from './body';
+import { ReturnExpressionTree } from './expression';
 import { NewRuleType, Rule } from './rule';
 
 export abstract class FunctionParseTree extends ParseTree {
@@ -24,6 +25,14 @@ export class Function extends Rule {
         treeClass: class extends FunctionParseTree {
           get returnType(): string {
             return this.tokenValue(4);
+          }
+          validate(): void {
+            //
+            const body = this.children[1];
+            const ret = body.children.find(
+              (child) => child instanceof ReturnExpressionTree
+            );
+            if (!ret) this.addError('missing return statement from function');
           }
           toString(): string {
             return `fn (${this.children[0].toString()}): ${this.tokenValue(

@@ -2,12 +2,6 @@ import { State } from './earley';
 import { ParseTree } from './parseTree';
 import { Token } from './tokenizer';
 
-type MetaData = {
-  type: string;
-  primitive: boolean;
-  constant: boolean;
-};
-
 export type Declaration = {
   name: string;
   variable?: {

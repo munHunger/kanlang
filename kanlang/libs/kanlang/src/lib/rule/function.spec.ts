@@ -19,6 +19,13 @@ describe('function', () => {
   );
 
   testThrows(
+    'throws error if missing return statement in function',
+    new Function(),
+    '(a:num):num {let b = a + 1;}',
+    /.*missing.*return.*statement/
+  );
+
+  testThrows(
     'it throws errors if you mismatch types from argument',
     new Function(),
     '(a: num, b: boolean):num {return a + b;}',

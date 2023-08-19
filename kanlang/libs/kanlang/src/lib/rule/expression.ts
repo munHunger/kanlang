@@ -4,23 +4,29 @@ import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { VariableAssignment } from './variable';
 
+export abstract class ReturnExpressionTree extends ParseTree {
+  abstract get returnType(): string;
+}
+
 export class Expression extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
         root: 0,
         parts: [['keyword', 'return'], this],
-        treeClass: class extends ParseTree {
+        treeClass: class extends ReturnExpressionTree {
+          get returnType(): string {
+            return this.children[0].type();
+          }
           toString(): string {
             return `return ${this.children[0].toString()}`;
           }
           validate(): void {
             const fn = this.getParentOfType(Function) as FunctionParseTree;
             if (!fn) this.addError('cannot return outside of a function');
-            const returnedType = this.children[0].type();
-            if (fn.returnType != returnedType)
+            if (fn.returnType != this.returnType)
               this.addError(
-                `type missmatch. Cannot return ${returnedType} in function expecting ${fn.returnType}`
+                `type missmatch. Cannot return ${this.returnType} in function expecting ${fn.returnType}`
               );
           }
         },
