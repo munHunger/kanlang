@@ -91,7 +91,10 @@ export class Argument extends Rule {
           validate(): void {
             this.addToScope({
               name: this.tokenValue(0),
-              type: this.tokenValue(2),
+              variable: {
+                constant: false,
+                type: this.tokenValue(2),
+              },
             });
           }
         },

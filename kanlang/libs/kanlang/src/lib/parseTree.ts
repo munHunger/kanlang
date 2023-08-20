@@ -45,7 +45,7 @@ export class ParseTree {
 
   printScope(): string {
     return `[${this.getAllDeclarationsInScope()
-      .map((d) => `${d.name}: ${d.type}`)
+      .map((d) => `${d.name}: ${d.variable.type}`)
       .sort((a, b) => a.localeCompare(b))
       .join(', ')}]`;
   }

@@ -5,12 +5,13 @@ import { Token } from './tokenizer';
 export type Declaration = {
   name: string;
   variable?: {
-    primitive: boolean;
     constant: boolean;
     type: string;
   };
   type?: {
     // empty for now but should hold our typesystem
+    alias?: string;
+    properties?: Declaration[];
   };
 };
 

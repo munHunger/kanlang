@@ -22,7 +22,10 @@ export class VariableAssignment extends Rule {
           validate(): void {
             this.addToScope({
               name: this.tokenValue(0),
-              type: this.children[0].type(),
+              variable: {
+                constant: false,
+                type: this.children[0].type(),
+              },
             });
           }
         },

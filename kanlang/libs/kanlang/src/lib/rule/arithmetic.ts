@@ -119,7 +119,7 @@ export class Atom extends Rule {
                 `variable ${name} is not defined` +
                   (didYouMean ? `did you mean '${didYouMean[1].name}'` : '')
               );
-            } else if (this.getDeclaration(name).type != 'num')
+            } else if (this.getDeclaration(name).variable?.type != 'num')
               this.addError(`variable ${name} is not numeric`);
           }
           type(): string {
