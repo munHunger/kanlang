@@ -54,8 +54,12 @@ export class ParseTree {
     return '';
   }
 
-  addToScope(declaration: Declaration) {
-    if (!this.parent) {
+  addToScope(declaration: Declaration, unsafe = false) {
+    if (this.getDeclaration(declaration.name) && !unsafe) {
+      this.addError(
+        `${declaration.name} is already declared. Cannot reassign it`
+      );
+    } else if (!this.parent) {
       this.scope[declaration.name] = declaration;
     } else {
       this.parent.scope[declaration.name] = declaration;
@@ -63,7 +67,7 @@ export class ParseTree {
   }
 
   mergeParentScope() {
-    Object.values(this.scope).forEach((v) => this.addToScope(v));
+    Object.values(this.scope).forEach((v) => this.addToScope(v, true));
   }
 
   validate() {
