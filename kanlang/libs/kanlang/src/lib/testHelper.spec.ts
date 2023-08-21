@@ -13,7 +13,7 @@ export function testToString(
   expected: string
 ) {
   const parser = new EarleyParser(startingRule);
-  it(message + ':' + input, () =>
+  it(message + ':\n' + input, () =>
     expect(
       semantic.analyze(parser.parse(tokenizer.tokenize(input))).toString()
     ).toEqual(expected)

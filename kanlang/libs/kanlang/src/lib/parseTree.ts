@@ -14,6 +14,20 @@ export class ParseTree {
     public parent?: ParseTree
   ) {}
 
+  varIsOfType(variable: string, type: string): boolean {
+    const d = this.getDeclaration(variable);
+    if (!d) return false;
+    else if (d.variable && d.variable.type === type) {
+      return true;
+    } else if (d.type && d.type.alias == type) {
+      return true;
+    }
+    const t = this.getDeclaration(d.variable.type);
+    if (t) {
+      return this.varIsOfType(t.name, type);
+    }
+  }
+
   getDeclaration(name: string): Declaration | undefined {
     if (this.scope[name]) return this.scope[name];
     else if (this.parent) return this.parent.getDeclaration(name);
@@ -45,7 +59,10 @@ export class ParseTree {
 
   printScope(): string {
     return `[${this.getAllDeclarationsInScope()
-      .map((d) => `${d.name}: ${d.variable.type}`)
+      .map((d) => {
+        if (d.variable) return `${d.name}: ${d.variable.type}`;
+        else if (d.type) return `{${d.name} is ${d.type.alias}}`;
+      })
       .sort((a, b) => a.localeCompare(b))
       .join(', ')}]`;
   }
