@@ -117,7 +117,7 @@ export class Atom extends Rule {
                 .sort((a, b) => a[0] - b[0])[0];
               this.addError(
                 `variable ${name} is not defined` +
-                  (didYouMean ? `did you mean '${didYouMean[1].name}'` : '')
+                  (didYouMean ? `\ndid you mean '${didYouMean[1].name}'` : '')
               );
             } else if (!this.varIsOfType(name, 'num'))
               this.addError(`variable ${name} is not numeric`);

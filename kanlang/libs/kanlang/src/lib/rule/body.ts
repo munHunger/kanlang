@@ -17,6 +17,11 @@ export class Body extends Rule {
       {
         root: 0,
         parts: [this, new Expression(), ['punct', ';']],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `${this.children[0].toString()}\n${this.children[1].toString()}`;
+          }
+        },
       },
     ];
   }

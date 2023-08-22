@@ -6,12 +6,10 @@ export class TypeRequest extends Rule {
     return [
       {
         root: 0,
-        parts: ['identifier', ['punct', ':'], ['operator', '*'], 'identifier'],
+        parts: [['operator', '*'], 'identifier'],
         treeClass: class extends ParseTree {
           toString(): string {
-            return `${this.tokenValue(0)} from ${this.tokenValue(
-              3
-            )} should be a chain here`;
+            return `${this.tokenValue(1)} fetched from scope`;
           }
           validate(): void {
             //TODO: validate it

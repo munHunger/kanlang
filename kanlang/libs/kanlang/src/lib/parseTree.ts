@@ -72,10 +72,12 @@ export class ParseTree {
   }
 
   addToScope(declaration: Declaration, unsafe = false) {
-    if (this.getDeclaration(declaration.name) && !unsafe) {
-      this.addError(
-        `${declaration.name} is already declared. Cannot reassign it`
-      );
+    if (this.getDeclaration(declaration.name)) {
+      if (!unsafe) {
+        this.addError(
+          `${declaration.name} is already declared. Cannot reassign it`
+        );
+      }
     } else if (!this.parent) {
       this.scope[declaration.name] = declaration;
     } else {

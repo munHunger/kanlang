@@ -13,6 +13,9 @@ export class Main extends Rule {
           toString(): string {
             return this.children.map((c) => c.toString()).join('\n');
           }
+          validate(): void {
+            this.children.forEach((child) => child.mergeParentScope());
+          }
         },
       },
       {

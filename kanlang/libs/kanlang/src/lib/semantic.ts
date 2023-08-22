@@ -48,7 +48,12 @@ export class SemanticAnalyzer {
     if (ParseTree.errors.length > 0) {
       if (!parent) {
         //analysis is done
-        throw new Error(ParseTree.errors.map((e) => e.message).join('\n')); //FIXME: allow for multiple errors
+        console.log(tree.toString());
+        throw new Error(
+          ParseTree.errors
+            .map((e) => `${e.lineNumber} | ${e.message}`)
+            .join('\n')
+        ); //FIXME: allow for multiple errors
       }
     }
     return tree;
