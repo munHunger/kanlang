@@ -2,6 +2,7 @@ import { ParseTree } from '../parseTree';
 import { Arithmetic } from './arithmetic';
 import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
+import { TypeRequest } from './typeRequest';
 import { VariableAssignment } from './variable';
 
 export abstract class ReturnExpressionTree extends ParseTree {
@@ -34,6 +35,11 @@ export class Expression extends Rule {
       {
         root: 0,
         parts: [new Arithmetic()],
+        invisibleNode: true,
+      },
+      {
+        root: 0,
+        parts: [new TypeRequest()],
         invisibleNode: true,
       },
       {
