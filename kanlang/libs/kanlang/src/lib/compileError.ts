@@ -1,10 +1,11 @@
 import { Token } from './tokenizer';
 
-export class CompileError extends Error {
+export class CompileError implements Error {
   public charIndex: number;
   public lineNumber: number;
+  private msg: string;
   constructor(private token: Token | Token[], message: string) {
-    super(`${message}`);
+    this.msg = message;
     if (Array.isArray(token)) {
       if (token.length > 0) {
         this.charIndex = token[0].position.character;
@@ -16,6 +17,8 @@ export class CompileError extends Error {
     }
     this.name = CompileError.name;
   }
+  name = CompileError.name;
+  stack?: string;
 
   get length(): number {
     if (Array.isArray(this.token)) {
@@ -24,5 +27,9 @@ export class CompileError extends Error {
     } else {
       return this.token.value.length;
     }
+  }
+
+  get message(): string {
+    return this.msg;
   }
 }

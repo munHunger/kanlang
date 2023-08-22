@@ -9,12 +9,12 @@ export abstract class ReturnExpressionTree extends ParseTree {
   abstract get returnType(): string;
 }
 
-export class Expression extends Rule {
+export class Return extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
         root: 0,
-        parts: [['keyword', 'return'], this],
+        parts: [['keyword', 'return'], new Expression()],
         treeClass: class extends ReturnExpressionTree {
           get returnType(): string {
             return this.children[0].type();
@@ -29,6 +29,28 @@ export class Expression extends Rule {
               this.addError(
                 `type missmatch. Cannot return ${this.returnType} in function expecting ${fn.returnType}`
               );
+          }
+        },
+      },
+    ];
+  }
+}
+
+export class Expression extends Rule {
+  get rules(): NewRuleType[] {
+    return [
+      {
+        root: 0,
+        parts: [this, ['keyword', 'as'], 'identifier'],
+        treeClass: class extends ParseTree {
+          type(): string {
+            return this.tokenValue(2);
+          }
+          toString(): string {
+            return `(${this.children[0].toString()} as ${this.type()})`;
+          }
+          validate(): void {
+            //TODO: Check if type exists
           }
         },
       },

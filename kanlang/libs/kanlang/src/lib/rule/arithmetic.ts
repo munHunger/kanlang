@@ -1,5 +1,6 @@
 import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
+import { Expression } from './expression';
 import { NewRuleType, Rule } from './rule';
 
 export class Arithmetic extends Rule {
@@ -126,6 +127,11 @@ export class Atom extends Rule {
             return 'num';
           }
         },
+      },
+      {
+        root: 0,
+        parts: [new Expression()],
+        invisibleNode: true,
       },
     ];
   }

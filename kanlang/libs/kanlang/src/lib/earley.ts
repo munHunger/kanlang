@@ -108,7 +108,9 @@ export class EarleyParser {
         if (k == tokens.length)
           throw new CompileError(
             tokens[k - 1],
-            `Syntax error.\n  Missing token.${expectedTokens}`
+            `Syntax error.\n  Missing token after ${
+              tokens[k - 1].value
+            }.${expectedTokens}`
           );
         else
           throw new CompileError(

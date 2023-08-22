@@ -14,9 +14,7 @@ export class TypeDef extends Rule {
         ],
         treeClass: class extends ParseTree {
           toString(): string {
-            return `{${this.tokenValue(1)} is ${this.tokenValue(
-              3
-            )}} ${this.printScope()}`;
+            return `{${this.tokenValue(1)} is ${this.tokenValue(3)}}`;
           }
           validate(): void {
             this.addToScope({

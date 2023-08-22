@@ -8,7 +8,7 @@ export class Main extends Rule {
     return [
       {
         root: 0,
-        parts: [this, this], //Strange way to handle repetition. unlikely to be efficeint, but seems to work
+        parts: [new Function(), this],
         treeClass: class extends ParseTree {
           toString(): string {
             return this.children.map((c) => c.toString()).join('\n');
@@ -20,12 +20,24 @@ export class Main extends Rule {
       },
       {
         root: 0,
-        parts: [new Function()],
+        parts: [new TypeDef(), this],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return this.children.map((c) => c.toString()).join('\n');
+          }
+          validate(): void {
+            this.children.forEach((child) => child.mergeParentScope());
+          }
+        },
+      },
+      {
+        root: 0,
+        parts: [new Function()], //TODO: a bit weird that you have to end like this. Would be better if epsilon worked
         invisibleNode: true,
       },
       {
         root: 0,
-        parts: [new TypeDef()],
+        parts: [new TypeDef()], //TODO: a bit weird that you have to end like this. Would be better if epsilon worked
         invisibleNode: true,
       },
     ];

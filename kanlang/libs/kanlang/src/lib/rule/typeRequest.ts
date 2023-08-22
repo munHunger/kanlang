@@ -8,6 +8,9 @@ export class TypeRequest extends Rule {
         root: 0,
         parts: [['operator', '*'], 'identifier'],
         treeClass: class extends ParseTree {
+          type(): string {
+            return this.tokenValue(1);
+          }
           toString(): string {
             return `${this.tokenValue(1)} fetched from scope`;
           }

@@ -51,8 +51,15 @@ export class SemanticAnalyzer {
         console.log(tree.toString());
         throw new Error(
           ParseTree.errors
-            .map((e) => `${e.lineNumber} | ${e.message}`)
-            .join('\n')
+            .map((e) => {
+              const line = tree.allTokens
+                .filter((token) => token.position.line === e.lineNumber)
+                .map((t) => t.value)
+                .join(' ');
+              const linum = (e.lineNumber + '    ').substring(0, 4);
+              return `${linum} | ${line} \n ${e.message}`;
+            })
+            .join('\n\n')
         ); //FIXME: allow for multiple errors
       }
     }
