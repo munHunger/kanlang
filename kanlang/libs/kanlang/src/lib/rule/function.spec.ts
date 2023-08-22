@@ -5,7 +5,7 @@ describe('function', () => {
   testToString(
     'function calls work',
     new Function(),
-    '(a: num, b: boolean):num {return a + 1;}',
+    '(a: num, b: boolean):num \n{return a + 1;}',
     [
       'fn (a: num, b: boolean): num [a: num, b: boolean]',
       'return +(<a>, 1) [a: num, b: boolean]',
@@ -28,7 +28,7 @@ describe('function', () => {
   testThrows(
     'it throws errors if you mismatch types from argument',
     new Function(),
-    '(a: num, b: boolean):num {return a + b;}',
+    '(a: num, b: boolean):num\n {return a + b;}',
     /.*b.*not.*numeric/
   );
 });

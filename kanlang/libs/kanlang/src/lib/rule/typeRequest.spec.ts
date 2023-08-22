@@ -20,6 +20,16 @@ type Kelvin alias num
   return *Celsius - 273 as Kelvin; //TODO: a bit cheeky, should not be needed but here to avoid first version issues with having to variables in scope that tranforms to Kelvin (f,c)
 }
     `,
-    'a := 2 [a: num]'
+    [
+      '{Celsius is num}',
+      '{Fahrenheit is num}',
+      '{Kelvin is num}',
+      'fn (f: Fahrenheit): Celsius [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+      'return (-(<f>, /(*(32, 5), 9)) as Celsius) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+      'fn (c: Celsius): Kelvin [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+      'return (-(<c>, 273) as Kelvin) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+      'fn (f: Fahrenheit): Kelvin [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+      'return (-(Celsius fetched from scope, 273) as Kelvin) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius, f: Fahrenheit]',
+    ].join('\n')
   );
 });

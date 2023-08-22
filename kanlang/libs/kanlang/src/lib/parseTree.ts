@@ -58,11 +58,14 @@ export class ParseTree {
   }
 
   printScope(): string {
-    return `[${this.getAllDeclarationsInScope()
-      .map((d) => {
-        if (d.variable) return `${d.name}: ${d.variable.type}`;
-        else if (d.type) return `{${d.name} is ${d.type.alias}}`;
-      })
+    return `[${[
+      ...new Set(
+        this.getAllDeclarationsInScope().map((d) => {
+          if (d.variable) return `${d.name}: ${d.variable.type}`;
+          else if (d.type) return `{${d.name} is ${d.type.alias}}`;
+        })
+      ),
+    ]
       .sort((a, b) => a.localeCompare(b))
       .join(', ')}]`;
   }
@@ -86,7 +89,7 @@ export class ParseTree {
   }
 
   mergeParentScope() {
-    Object.values(this.scope).forEach((v) => this.addToScope(v, true));
+    Object.values(this.scope).forEach((v) => this.parent.addToScope(v, true));
   }
 
   validate() {

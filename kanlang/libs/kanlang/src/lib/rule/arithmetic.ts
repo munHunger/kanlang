@@ -2,6 +2,7 @@ import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
 import { Expression } from './expression';
 import { NewRuleType, Rule } from './rule';
+import { TypeRequest } from './typeRequest';
 
 export class Arithmetic extends Rule {
   get rules(): NewRuleType[] {
@@ -130,7 +131,7 @@ export class Atom extends Rule {
       },
       {
         root: 0,
-        parts: [new Expression()],
+        parts: [new TypeRequest()],
         invisibleNode: true,
       },
     ];
