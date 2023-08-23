@@ -46,6 +46,9 @@ export class Expression extends Rule {
         root: 0,
         parts: [this, ['keyword', 'as'], 'identifier'],
         treeClass: class extends ParseTree {
+          toJs(): string {
+            return this.children[0].toJs(); //no types in js so no need to convert
+          }
           type(): string {
             return this.tokenValue(2);
           }

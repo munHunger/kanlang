@@ -26,15 +26,23 @@ export class Function extends Rule {
           get returnType(): string {
             return this.tokenValue(4);
           }
+          get argTypes(): string[] {
+            return (
+              (this.children[0] as ArgumentParseTree).types || [
+                this.children[0].type(),
+              ]
+            );
+          }
           toJs(): string {
-            return `function ${(
-              this.children[0] as ArgumentParseTree
-            ).types.join('_')}_${
+            return `function ${this.argTypes.join('_')}_${
               this.returnType
             }(${this.children[0].toJs()}){${this.children[1].toJs()}}`;
           }
           validate(): void {
-            //
+            this.addTransformation({
+              from: this.argTypes,
+              to: this.returnType,
+            });
             const body = this.children[1];
             const ret = body.children.find(
               (child) => child instanceof ReturnExpressionTree

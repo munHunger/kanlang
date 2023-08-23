@@ -4,15 +4,30 @@ import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
 
+export type Transformation = { from: string[]; to: string };
+
 export class ParseTree {
   static errors: CompileError[] = [];
   children: ParseTree[] = [];
   scope: Record<string, Declaration> = {};
+  transformation: Transformation[] = [];
   constructor(
     public rule: Rule,
     private state: State,
     public parent?: ParseTree
   ) {}
+
+  transformationToFunctionName(t: Transformation): string {
+    return t.from.concat([t.to]).join('_');
+  }
+
+  get allTransformations(): Transformation[] {
+    return this.transformation.concat(this.parent?.allTransformations || []);
+  }
+
+  addTransformation(transformation: Transformation) {
+    (this.parent || this).transformation.push(transformation);
+  }
 
   varIsOfType(variable: string, type: string): boolean {
     const d = this.getDeclaration(variable);

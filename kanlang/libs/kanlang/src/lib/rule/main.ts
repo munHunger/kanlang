@@ -10,11 +10,14 @@ export class Main extends Rule {
         root: 0,
         parts: [new Function(), this],
         treeClass: class extends ParseTree {
+          toJs(): string {
+            return this.children.map((c) => c.toJs()).join('\n');
+          }
           toString(): string {
             return this.children.map((c) => c.toString()).join('\n');
           }
           validate(): void {
-            this.children.forEach((child) => child.mergeParentScope());
+            this.children.forEach((child) => child.mergeParentScope()); //FIXME: this breaks scoping
           }
         },
       },
@@ -22,6 +25,9 @@ export class Main extends Rule {
         root: 0,
         parts: [new TypeDef(), this],
         treeClass: class extends ParseTree {
+          toJs(): string {
+            return this.children[1].toJs();
+          }
           toString(): string {
             return this.children.map((c) => c.toString()).join('\n');
           }
