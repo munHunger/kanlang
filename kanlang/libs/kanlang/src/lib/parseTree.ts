@@ -54,7 +54,9 @@ export class ParseTree {
   }
 
   toJs(): string {
-    return 'JS';
+    throw new Error(
+      `Seems like there is a missing code generation step for rule ${this.rule.ruleName}`
+    );
   }
 
   toString(): string {

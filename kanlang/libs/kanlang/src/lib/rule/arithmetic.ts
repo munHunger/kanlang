@@ -124,6 +124,9 @@ export class Atom extends Rule {
           toString(): string {
             return `<${this.tokenValue(0)}>`;
           }
+          toJs(): string {
+            return `${this.tokenValue(0)}`;
+          }
           validate(): void {
             const name = this.tokenValue(0);
             if (!this.getDeclaration(name)) {
