@@ -1,7 +1,13 @@
-import { testThrows, testToString } from '../testHelper.spec';
+import { testCodeGen, testThrows, testToString } from '../testHelper.spec';
 import { Function } from './function';
 
 describe('function', () => {
+  testCodeGen(
+    'function calls work',
+    new Function(),
+    '(a: num, b: boolean):num \n{return a + 1;}',
+    'function num_boolean_num(a, b){return a + 1;}'
+  );
   testToString(
     'function calls work',
     new Function(),

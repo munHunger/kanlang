@@ -26,6 +26,13 @@ export class Function extends Rule {
           get returnType(): string {
             return this.tokenValue(4);
           }
+          toJs(): string {
+            return `function ${(
+              this.children[0] as ArgumentParseTree
+            ).types.join('_')}_${
+              this.returnType
+            }(${this.children[0].toJs()}){${this.children[1].toJs()}}`;
+          }
           validate(): void {
             //
             const body = this.children[1];
@@ -45,13 +52,29 @@ export class Function extends Rule {
   }
 }
 
+export abstract class ArgumentParseTree extends ParseTree {
+  abstract get types(): string[];
+}
 export class ArgumentArray extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
         root: 0,
         parts: [this, ['punct', ','], new Argument()],
-        treeClass: class extends ParseTree {
+        treeClass: class extends ArgumentParseTree {
+          get types(): string[] {
+            if (this.children[0] instanceof ArgumentParseTree) {
+              return this.children[0].types.concat([this.children[1].type()]);
+            } else if (this.children[0].toString().length == 0) {
+              //epsilon rule
+              return [this.children[1].type()];
+            } else {
+              return [this.children[0].type(), this.children[1].type()];
+            }
+          }
+          toJs(): string {
+            return `${this.children[0].toJs()}, ${this.children[1].toJs()}`;
+          }
           toString(): string {
             return `${this.children[0].toString()}, ${this.children[1].toString()}`;
           }
@@ -85,15 +108,21 @@ export class Argument extends Rule {
         root: 0,
         parts: ['identifier', ['punct', ':'], 'identifier'],
         treeClass: class extends ParseTree {
+          type(): string {
+            return this.tokenValue(2);
+          }
           toString(): string {
-            return `${this.tokenValue(0)}: ${this.tokenValue(2)}`;
+            return `${this.tokenValue(0)}: ${this.type()}`;
+          }
+          toJs(): string {
+            return this.tokenValue(0);
           }
           validate(): void {
             this.addToScope({
               name: this.tokenValue(0),
               variable: {
                 constant: false,
-                type: this.tokenValue(2),
+                type: this.type(),
               },
             });
           }

@@ -19,6 +19,9 @@ export class Return extends Rule {
           get returnType(): string {
             return this.children[0].type();
           }
+          toJs(): string {
+            return `return ${this.children[0].toJs()}`;
+          }
           toString(): string {
             return `return ${this.children[0].toString()}`;
           }
