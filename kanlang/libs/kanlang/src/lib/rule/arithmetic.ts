@@ -1,6 +1,5 @@
 import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
-import { Expression } from './expression';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
 
@@ -26,6 +25,9 @@ export class Sum extends Rule {
           toString(): string {
             return `+(${this.children[0].toString()}, ${this.children[1].toString()})`;
           }
+          toJs(): string {
+            return `${this.children[0].toJs()} + ${this.children[1].toJs()}`;
+          }
           type(): string {
             return 'num';
           }
@@ -37,6 +39,9 @@ export class Sum extends Rule {
         treeClass: class extends ParseTree {
           toString(): string {
             return `-(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+          toJs(): string {
+            return `${this.children[0].toJs()} - ${this.children[1].toJs()}`;
           }
           type(): string {
             return 'num';
@@ -62,6 +67,9 @@ export class Product extends Rule {
           toString(): string {
             return `*(${this.children[0].toString()}, ${this.children[1].toString()})`;
           }
+          toJs(): string {
+            return `${this.children[0].toJs()} * ${this.children[1].toJs()}`;
+          }
           type(): string {
             return 'num';
           }
@@ -73,6 +81,9 @@ export class Product extends Rule {
         treeClass: class extends ParseTree {
           toString(): string {
             return `/(${this.children[0].toString()}, ${this.children[1].toString()})`;
+          }
+          toJs(): string {
+            return `${this.children[0].toJs()} / ${this.children[1].toJs()}`;
           }
           type(): string {
             return 'num';
@@ -96,6 +107,9 @@ export class Atom extends Rule {
         parts: ['number'],
         treeClass: class extends ParseTree {
           toString(): string {
+            return this.tokenValue(0);
+          }
+          toJs(): string {
             return this.tokenValue(0);
           }
           type(): string {

@@ -53,6 +53,10 @@ export class ParseTree {
     }
   }
 
+  toJs(): string {
+    return 'JS';
+  }
+
   toString(): string {
     return '';
   }
