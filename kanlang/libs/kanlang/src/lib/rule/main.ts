@@ -17,7 +17,7 @@ export class Main extends Rule {
             return this.children.map((c) => c.toString()).join('\n');
           }
           validate(): void {
-            this.children.forEach((child) => child.mergeParentScope()); //FIXME: this breaks scoping
+            //
           }
         },
       },
@@ -32,7 +32,7 @@ export class Main extends Rule {
             return this.children.map((c) => c.toString()).join('\n');
           }
           validate(): void {
-            this.children.forEach((child) => child.mergeParentScope());
+            //
           }
         },
       },

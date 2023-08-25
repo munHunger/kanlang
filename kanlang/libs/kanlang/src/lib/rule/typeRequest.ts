@@ -12,8 +12,7 @@ export class TypeRequest extends Rule {
             const varInScope = this.getAllDeclarationsInScope()
               .filter((v) => v.variable)
               .find((v) => v.variable.type === type)?.name;
-            console.log(this.printScope());
-            if (varInScope) return [varInScope + ':' + type];
+            if (varInScope) return [varInScope];
             return this.allTransformations
               .filter((t) => t.to == type)
               .map((producer) => {
@@ -24,14 +23,14 @@ export class TypeRequest extends Rule {
                     producer
                   )}(${producer.from
                     .map((arg) => {
-                      return 'recc:' + arg + ':' + this.request(arg);
+                      return this.request(arg);
                     })
                     .join(', ')})`;
                 }
               });
           }
           toJs(): string {
-            return this.request(this.type()).join('<>');
+            return this.request(this.type())[0]; //TODO: how to handle recursion?
           }
           type(): string {
             return this.tokenValue(1);
@@ -41,6 +40,12 @@ export class TypeRequest extends Rule {
           }
           validate(): void {
             //TODO: validate it
+            if (this.request(this.type()).length == 0) {
+              //TODO: not sure if this is enough
+              this.addError(
+                'Cannot find a transformation path to ' + this.type()
+              );
+            }
           }
         },
       },

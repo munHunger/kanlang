@@ -14,13 +14,17 @@ type Kelvin alias num
   return f - 32 * 5 / 9 as Celsius;
 }
 (c: Celsius): Kelvin {
-  return c - 273 as Kelvin;
+  return c + 273.15 as Kelvin;
 }
 (f: Fahrenheit): Kelvin {
-  return *Celsius - 273 as Kelvin;
+  return *Kelvin;
 }
     `,
-    ''
+    [
+      'function Fahrenheit_Celsius(f){return f - 32 * 5 / 9;}',
+      'function Celsius_Kelvin(c){return c + 273.15;}',
+      'function Fahrenheit_Kelvin(f){return Celsius_Kelvin(Fahrenheit_Celsius(f));}',
+    ].join('\n')
   );
 
   testToString(
@@ -35,10 +39,10 @@ type Kelvin alias num
   return f - 32 * 5 / 9 as Celsius; //TODO: should have parenthesis
 }
 (c: Celsius): Kelvin {
-  return c - 273 as Kelvin; //TODO: should allow double
+  return c - 273 as Kelvin;
 }
 (f: Fahrenheit): Kelvin {
-  return *Celsius - 273 as Kelvin; //TODO: a bit cheeky, should not be needed but here to avoid first version issues with having to variables in scope that tranforms to Kelvin (f,c)
+  return *Celsius - 273 as Kelvin;
 }
     `,
     [
