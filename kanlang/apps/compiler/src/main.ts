@@ -3,15 +3,28 @@ import fs from 'fs';
 import { Tokenizer } from '@kanlang/kanlang';
 
 const tokenizer = new Tokenizer();
-
-fs.writeFileSync(
-  __dirname + '/../lsp/syntaxes/kanlang.tmLanguage.json',
-  JSON.stringify(tokenizer.tmLang, null, 2)
-);
-
-const tokens = tokenizer.tokenize(`
-(a: int, b: int) => {
-    a + b
+const argArray = process.argv.slice(2);
+if (argArray.length === 0) {
+  printHelp();
+} else {
+  const args: any = {};
+  for (let i = 0; i < argArray.length; i++) {
+    if (argArray[i] == '--generate-tmlanguage') {
+      args.tmLocation = argArray[i + 1];
+      i++;
+    }
+    if (argArray[i] == '-h') {
+      printHelp();
+    }
+  }
+  if (args.tmLocation) {
+    fs.writeFileSync(
+      args.tmLocation,
+      JSON.stringify(tokenizer.tmLang, null, 2)
+    );
+  }
 }
-`);
-console.log(tokens);
+
+function printHelp() {
+  console.log('you probably need help');
+}

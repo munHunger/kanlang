@@ -1,52 +1,80 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Kanlang",
   "patterns": [
     {
-      "include": "#identifier"
+      "include": "#comment"
     },
     {
       "include": "#keyword"
     },
     {
-      "include": "#punctuation"
-    },
-    {
-      "include": "#operator"
+      "include": "#whitespace"
     },
     {
       "include": "#literal"
     },
     {
-      "include": "#comment"
+      "include": "#number"
+    },
+    {
+      "include": "#boolean"
+    },
+    {
+      "include": "#operator"
+    },
+    {
+      "include": "#identifier"
+    },
+    {
+      "include": "#punct"
     }
   ],
   "repository": {
-    "identifier": {
-      "name": "entity.name.function",
-      "match": "\\b(text|validate|replace|save)\\b"
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.block",
+          "match": "\\/\\/.*"
+        }
+      ]
     },
     "keyword": {
       "patterns": [
         {
           "name": "keyword.control.kanlang",
-          "match": "(if|else|for|while|return)"
+          "match": "(if|else|for|while|return|let|type|alias|as)"
         }
       ]
     },
-    "punctuation": {
+    "whitespace": {
       "patterns": [
         {
-          "name": "keyword.control.kanlang",
-          "match": ","
-        },
+          "name": "whitespace.kanlang",
+          "match": "\\s"
+        }
+      ]
+    },
+    "literal": {
+      "patterns": [
         {
-          "name": "keyword.control.kanlang",
-          "match": "\\{"
-        },
+          "name": "string",
+          "match": "\".*\""
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
         {
-          "name": "keyword.control.kanlang",
-          "match": "\\}"
+          "name": "constant.numeric",
+          "match": "\\d+(\\.\\d+)?"
+        }
+      ]
+    },
+    "boolean": {
+      "patterns": [
+        {
+          "name": "constant.language",
+          "match": "true|false"
         }
       ]
     },
@@ -54,46 +82,25 @@
       "patterns": [
         {
           "name": "keyword.operator.kanlang",
-          "match": "(\\+|=)"
+          "match": "(\\+|==|=|!|-|\\*|\\/)"
         }
       ]
     },
-    "literal": {
-      "name": "string.kanlang",
-      "begin": "\"",
-      "end": "\"",
+    "identifier": {
       "patterns": [
         {
-          "name": "constant.character.escape.kanlang",
-          "match": "\\\\."
-        },
-        {
-          "name": "punctuation.term.kanlang",
-          "begin": "\\{",
-          "beginCaptures": {
-            "0": {
-              "name": "meta.brace.curly.kanlang"
-            }
-          },
-          "end": "\\}",
-          "endCaptures": {
-            "0": {
-              "name": "meta.brace.curly.kanlang"
-            }
-          },
-          "patterns": [
-            {
-              "include": "#operator"
-            },
-            {
-              "include": "#literal"
-            }
-          ]
+          "name": "variable.parameter.kanlang",
+          "match": "[a-zA-Z][a-zA-Z0-9_]*"
         }
       ]
     },
-    "comment": {
-      "patterns": []
+    "punct": {
+      "patterns": [
+        {
+          "name": "support.other.kanlang",
+          "match": "(;|\\(|\\)|{|}|,|:)"
+        }
+      ]
     }
   },
   "scopeName": "text.kanlang"

@@ -42,6 +42,24 @@
         }
       }
     },
+    "tmlanguage": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["package"],
+      "options": {
+        "command": "./dist/kanlang --generate-tmlanguage apps/lsp/syntaxes/kanlang.tmLanguage.json"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "pkg ."
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
