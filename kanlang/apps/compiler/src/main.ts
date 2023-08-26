@@ -29,5 +29,11 @@ if (argArray.length === 0) {
 }
 
 function printHelp() {
-  console.log('you probably need help');
+  console.log(`Usage: kanlang [OPTION] [FILE]
+The Kanlang compiler
+
+OPTIONS:
+   -h                               print this help message
+   --generate-tmlanguage <output>   generate a text mate language file for kanlang 
+                                    at the output`);
 }

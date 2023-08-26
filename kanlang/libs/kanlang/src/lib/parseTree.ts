@@ -4,7 +4,7 @@ import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
 
-export type Transformation = { from: string[]; to: string };
+export type Transformation = { from: string[]; to: string[] };
 
 export class ParseTree {
   static errors: CompileError[] = [];
@@ -18,7 +18,7 @@ export class ParseTree {
   ) {}
 
   transformationToFunctionName(t: Transformation): string {
-    return t.from.concat([t.to]).join('_');
+    return [...t.from, '_', ...t.to].join('_');
   }
 
   get allTransformations(): Transformation[] {

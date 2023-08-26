@@ -14,7 +14,7 @@ export class TypeRequest extends Rule {
               .find((v) => v.variable.type === type)?.name;
             if (varInScope) return [varInScope];
             return this.allTransformations
-              .filter((t) => t.to == type)
+              .filter((t) => t.to.includes(type))
               .map((producer) => {
                 if (producer.from.length == 0)
                   return this.transformationToFunctionName(producer) + '()';

@@ -6,7 +6,7 @@ describe('function', () => {
     'function calls work',
     new Function(),
     '(a: num, b: boolean):num \n{return a + 1;}',
-    'function num_boolean_num(a, b){return a + 1;}'
+    'function num_boolean___num(a, b){return a + 1;}'
   );
   testToString(
     'function calls work',
@@ -21,7 +21,7 @@ describe('function', () => {
     'throws error if return type is not function type',
     new Function(),
     '():num {return true;}',
-    /.*type missmatch.*return.*boolean.*expecting num.*/
+    /.*type missmatch.*return.*boolean.*expecting.*num.*/
   );
 
   testThrows(

@@ -28,10 +28,6 @@ export class Return extends Rule {
           validate(): void {
             const fn = this.getParentOfType(Function) as FunctionParseTree;
             if (!fn) this.addError('cannot return outside of a function');
-            if (fn.returnType != this.returnType)
-              this.addError(
-                `type missmatch. Cannot return ${this.returnType} in function expecting ${fn.returnType}`
-              );
           }
         },
       },
