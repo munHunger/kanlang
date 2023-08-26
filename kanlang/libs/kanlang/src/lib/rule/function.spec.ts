@@ -23,6 +23,12 @@ describe('function', () => {
     '():num {return true;}',
     /.*type missmatch.*return.*boolean.*expecting.*num.*/
   );
+  testThrows(
+    'throws error if return type is not function type',
+    new Function(),
+    '():num | boolean {return true;}',
+    /.*Not all return types are matched.*/
+  );
 
   testThrows(
     'throws error if missing return statement in function',

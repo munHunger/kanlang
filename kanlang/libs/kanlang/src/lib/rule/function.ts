@@ -47,16 +47,26 @@ export class Function extends Rule {
           validate(): void {
             this.addTransformation(this.functionTransform);
             const body = this.children[2];
-            const ret = body.children.find(
+            const ret = body.children.filter(
               (child) => child instanceof ReturnExpressionTree
-            ) as ReturnExpressionTree;
-            if (!ret) this.addError('missing return statement from function');
-            else if (!this.returnType.includes(ret.returnType))
-              this.addError(
-                `type missmatch. Cannot return ${
-                  ret.returnType
-                } in function expecting [${this.returnType.join(', ')}]`
-              );
+            ) as ReturnExpressionTree[];
+            if (ret.length === 0)
+              this.addError('missing return statement from function');
+            ret.forEach((type) => {
+              if (!this.returnType.includes(type.returnType))
+                this.addError(
+                  `type missmatch. Cannot return ${
+                    type.returnType
+                  } in function expecting [${this.returnType.join(', ')}]`
+                );
+            });
+            if (
+              !this.returnType.every((type) =>
+                ret.find((r) => r.returnType === type)
+              )
+            ) {
+              this.addError(`Type error. Not all return types are matched.`); //TODO: figure out which one(s)
+            }
           }
           toString(): string {
             return `fn (${this.children[0].toString()}): ${this.returnType.join(
