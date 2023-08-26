@@ -1,28 +1,101 @@
 {
-  "name": "kanlang",
-  "version": "0.1.6",
-  "description": "a generic programming language",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "build": "npm run buildGrammar && webpack",
-    "buildGrammar": "rm -r src/grammar/out || true && mkdir -p src/grammar/out && nearleyc grammar/grammar.ne -o src/grammar/out/grammar.ts"
-  },
-  "author": "",
+  "name": "@kanlang/kanlang",
+  "version": "0.0.0",
   "license": "MIT",
+  "scripts": {
+    "generate-tmlang": "printenv"
+  },
+  "bin": "dist/apps/compiler/main.js",
+  "pkg": {
+    "scripts": "dist/apps/compiler/main.js",
+    "assets": "dist/apps/compiler/assets",
+    "targets": [
+      "node18-linux"
+    ],
+    "no-dict": "*",
+    "outputPath": "dist"
+  },
+  "private": true,
   "devDependencies": {
-    "@jest/globals": "^29.5.0",
+    "@nx/esbuild": "16.6.0",
+    "@nx/eslint-plugin": "16.6.0",
+    "@nx/jest": "16.6.0",
+    "@nx/js": "16.6.0",
+    "@nx/linter": "16.6.0",
+    "@nx/node": "^16.6.0",
+    "@nx/webpack": "^16.6.0",
+    "@nx/workspace": "16.6.0",
     "@types/jest": "^29.4.0",
-    "ts-jest": "^29.0.5",
-    "ts-loader": "^9.4.2",
-    "typescript": "^4.9.5",
-    "webpack": "^5.79.0",
-    "webpack-cli": "^5.0.1"
+    "@types/node": "~18.7.1",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "esbuild": "^0.17.17",
+    "eslint": "~8.15.0",
+    "eslint-config-prettier": "8.1.0",
+    "jest": "^29.4.1",
+    "jest-environment-node": "^29.4.1",
+    "nx": "16.6.0",
+    "prettier": "^2.6.2",
+    "ts-jest": "^29.1.0",
+    "ts-node": "10.9.1",
+    "typescript": "~5.1.3"
   },
   "dependencies": {
-    "@types/nearley": "^2.11.2",
-    "moo": "^0.5.2",
-    "nearley": "^2.20.1"
+    "axios": "^1.0.0",
+    "pkg": "^5.8.1",
+    "tslib": "^2.3.0",
+    "vscode": "^1.1.37",
+    "vscode-languageclient": "^8.1.0",
+    "vscode-languageserver": "^8.1.0",
+    "vscode-languageserver-textdocument": "^1.0.8"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "main": "./apps/lsp-client/out/extension",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "languageServerExample.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "languageServerExample.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "kanlang",
+        "aliases": [
+          "Kanlang",
+          "kanlang"
+        ],
+        "extensions": [
+          ".kan"
+        ],
+        "configuration": "./apps/lsp/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kanlang",
+        "scopeName": "text.kanlang",
+        "path": "./apps/lsp-client/syntaxes/kanlang.tmLanguage.json"
+      }
+    ]
   }
 }

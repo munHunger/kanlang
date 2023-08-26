@@ -6,8 +6,10 @@ read about the inception of this language [here](https://blog.wunderdev.com/blog
 
 ## Principles
 
-The core idea of this language is to be strongly typed and to only unique return types for all functions.
-i.e. it is not allowed to have to separate functions returning a `User` object
+The core idea of this language is to implement a transformation oriented design right into the language.
+
+With that in mind, we can remove all function names and only look at input/output types.
+So Kanlang is a programing language without function names, and it also lacks function invocations as it is missing handles for those. Instead it is being done by requesting the type that the function returns.
 
 ## Output
 
