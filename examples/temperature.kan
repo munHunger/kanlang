@@ -1,0 +1,13 @@
+type Celsius alias num
+type Fahrenheit alias num
+type Kelvin alias num
+
+(f: Fahrenheit): Celsius {
+  return f - 32 * 5 / 9 as Celsius; //TODO: should have parenthesis
+}
+(c: Celsius): Kelvin {
+  return c - 273 as Kelvin;
+}
+(f: Fahrenheit): Kelvin {
+  return *Kelvin;
+}
