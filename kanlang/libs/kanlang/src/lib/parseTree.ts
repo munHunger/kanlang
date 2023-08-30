@@ -4,7 +4,30 @@ import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
 
-export type Transformation = { from: string[]; to: string[] };
+export class Transformation {
+  constructor(public from: string[], public to: string[]) {}
+
+  get functionName(): string {
+    return [...this.from, '_', ...this.to].join('_');
+  }
+}
+
+export class TransformationTree {
+  children: TransformationTree[] = [];
+  constructor(
+    public transformation?: Transformation,
+    public declaration?: Declaration
+  ) {}
+
+  toJs(): string[] {
+    if (this.declaration) return [this.declaration.name];
+    if (this.transformation) {
+      const children = this.children.map((child) => child.toJs()).flat();
+      return [this.transformation.functionName + `(${children.join(', ')})`]; //TODO: handle variable
+    }
+    return this.children.map((child) => child.toJs()).flat();
+  }
+}
 
 export class ParseTree {
   static errors: CompileError[] = [];
@@ -17,8 +40,31 @@ export class ParseTree {
     public parent?: ParseTree
   ) {}
 
-  transformationToFunctionName(t: Transformation): string {
-    return [...t.from, '_', ...t.to].join('_');
+  flatten(): ParseTree[] {
+    return this.children.concat(
+      this.children.map((child) => child.flatten()).flat()
+    );
+  }
+
+  getTransformationPath(type: string): TransformationTree {
+    const varInScope = this.getAllDeclarationsInScope()
+      .filter((v) => v.variable)
+      .find((v) => v.variable.type === type);
+    if (varInScope) return new TransformationTree(undefined, varInScope);
+    const root = new TransformationTree();
+    root.children = this.allTransformations
+      .filter((t) => t.to.includes(type))
+      .map((producer) => {
+        if (producer.from.length == 0) return new TransformationTree(producer);
+        else {
+          const tranform = new TransformationTree(producer);
+          tranform.children = producer.from.map((arg) =>
+            this.getTransformationPath(arg)
+          );
+          return tranform;
+        }
+      });
+    return root;
   }
 
   get allTransformations(): Transformation[] {

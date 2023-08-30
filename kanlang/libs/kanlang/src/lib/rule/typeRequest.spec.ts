@@ -1,4 +1,4 @@
-import { testCodeGen, testToString } from '../testHelper.spec';
+import { testCodeGen, testThrows, testToString } from '../testHelper.spec';
 import { Main } from './main';
 
 describe('typerequest', () => {
@@ -25,6 +25,25 @@ type Kelvin alias num
       'function Celsius___Kelvin(c){return c + 273.15;}',
       'function Fahrenheit___Kelvin(f){return Celsius___Kelvin(Fahrenheit___Celsius(f));}',
     ].join('\n')
+  );
+
+  testThrows(
+    'can handle multiple return types',
+    new Main(),
+    `
+  type Celsius alias num
+  type Fahrenheit alias num
+  type Kelvin alias num
+
+  (f: Fahrenheit): Celsius | Kelvin {
+    return f - 32 * 5 / 9 as Celsius;
+    return f - 32 * 5 / 9 + 273.15 as Kelvin;
+  }
+  (f: Fahrenheit): Kelvin {
+    return *Celsius + 273.15 as Kelvin;
+  }
+      `,
+    /.*asd/
   );
 
   testToString(

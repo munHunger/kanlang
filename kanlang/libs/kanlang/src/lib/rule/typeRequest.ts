@@ -8,29 +8,9 @@ export class TypeRequest extends Rule {
         root: 0,
         parts: [['operator', '*'], 'identifier'],
         treeClass: class extends ParseTree {
-          request(type: string) {
-            const varInScope = this.getAllDeclarationsInScope()
-              .filter((v) => v.variable)
-              .find((v) => v.variable.type === type)?.name;
-            if (varInScope) return [varInScope];
-            return this.allTransformations
-              .filter((t) => t.to.includes(type))
-              .map((producer) => {
-                if (producer.from.length == 0)
-                  return this.transformationToFunctionName(producer) + '()';
-                else {
-                  return `${this.transformationToFunctionName(
-                    producer
-                  )}(${producer.from
-                    .map((arg) => {
-                      return this.request(arg);
-                    })
-                    .join(', ')})`;
-                }
-              });
-          }
           toJs(): string {
-            return this.request(this.type())[0]; //TODO: how to handle recursion?
+            //TODO: how to handle recursion?
+            return this.getTransformationPath(this.type()).toJs()[0]; //TODO: should add metadata and do a smart select, not just the first option
           }
           type(): string {
             return this.tokenValue(1);
@@ -39,12 +19,21 @@ export class TypeRequest extends Rule {
             return `${this.tokenValue(1)} fetched from scope`;
           }
           validate(): void {
-            //TODO: validate it
-            if (this.request(this.type()).length == 0) {
-              //TODO: not sure if this is enough
+            const path = this.getTransformationPath(this.type());
+            if (path.toJs().length == 0) {
               this.addError(
                 'Cannot find a transformation path to ' + this.type()
               );
+            } else {
+              const possibleOutputs = path.children
+                .filter((child) => child.transformation)
+                .map((child) => child.transformation.to);
+              if (possibleOutputs.every((output) => output.length > 1))
+                this.addError(
+                  `You haven't covered all cases: ${[
+                    ...new Set(possibleOutputs.flat()),
+                  ]}`
+                );
             }
           }
         },

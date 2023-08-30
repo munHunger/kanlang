@@ -34,22 +34,21 @@ export class Function extends Rule {
             );
           }
           get functionTransform(): Transformation {
-            return {
-              from: this.argTypes,
-              to: this.returnType,
-            };
+            return new Transformation(this.argTypes, this.returnType);
           }
           toJs(): string {
-            return `function ${this.transformationToFunctionName(
-              this.functionTransform
-            )}(${this.children[0].toJs()}){${this.children[2].toJs()}}`;
+            return `function ${
+              this.functionTransform.functionName
+            }(${this.children[0].toJs()}){${this.children[2].toJs()}}`;
           }
           validate(): void {
             this.addTransformation(this.functionTransform);
             const body = this.children[2];
-            const ret = body.children.filter(
-              (child) => child instanceof ReturnExpressionTree
-            ) as ReturnExpressionTree[];
+            const ret = body
+              .flatten()
+              .filter(
+                (child) => child instanceof ReturnExpressionTree
+              ) as ReturnExpressionTree[];
             if (ret.length === 0)
               this.addError('missing return statement from function');
             ret.forEach((type) => {
@@ -65,7 +64,13 @@ export class Function extends Rule {
                 ret.find((r) => r.returnType === type)
               )
             ) {
-              this.addError(`Type error. Not all return types are matched.`); //TODO: figure out which one(s)
+              this.addError(
+                `Type error. Not all return types are matched.\nExpecting ${
+                  this.returnType
+                }\nReceived ${ret.map((r) => r.returnType)} ${body.children.map(
+                  (child) => child.rule.ruleName
+                )}`
+              );
             }
           }
           toString(): string {
@@ -91,7 +96,7 @@ export class ReturnType extends Rule {
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
             return (this.children[0] as ReturnTypeParseTree).types.concat([
-              this.tokenValue(1),
+              this.tokenValue(2),
             ]);
           }
         },
