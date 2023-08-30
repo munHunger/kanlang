@@ -159,6 +159,13 @@ export class ParseTree {
     Object.values(this.scope).forEach((v) => this.parent.addToScope(v, true));
   }
 
+  /**
+   * To be called before validation and before drilling down to children
+   */
+  preValidate() {
+    //Left empty, to be implemented further down
+  }
+
   validate() {
     //Left empty, to be implemented further down
   }

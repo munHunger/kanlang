@@ -2,6 +2,7 @@ import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
+import { Variable, VariableTree } from './variable';
 
 export class Arithmetic extends Rule {
   get rules(): NewRuleType[] {
@@ -119,30 +120,21 @@ export class Atom extends Rule {
       },
       {
         root: 0,
-        parts: ['identifier'],
+        parts: [new Variable()],
         treeClass: class extends ParseTree {
           toString(): string {
-            return `<${this.tokenValue(0)}>`;
+            return this.children[0].toString();
           }
           toJs(): string {
-            return `${this.tokenValue(0)}`;
+            return this.children[0].toJs();
           }
           validate(): void {
-            const name = this.tokenValue(0);
-            if (!this.getDeclaration(name)) {
-              const didYouMean = this.getAllDeclarationsInScope()
-                .map((v) => [levenshteinDistance(name, v.name), v])
-                .filter((v) => v[0] < 2)
-                .sort((a, b) => a[0] - b[0])[0];
-              this.addError(
-                `variable ${name} is not defined` +
-                  (didYouMean ? `\ndid you mean '${didYouMean[1].name}'` : '')
-              );
-            } else if (!this.varIsOfType(name, 'num'))
-              this.addError(`variable ${name} is not numeric`);
+            const varName = (this.children[0] as VariableTree).getName();
+            if (!this.varIsOfType(varName, 'num'))
+              this.addError(`variable ${varName} is not numeric`);
           }
           type(): string {
-            return 'num';
+            return this.children[0].type();
           }
         },
       },

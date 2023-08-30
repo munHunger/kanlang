@@ -47,6 +47,30 @@ type Kelvin alias num
   );
 
   testToString(
+    'can request when there are multiple return types if that is handled',
+    new Main(),
+    `
+    type Celsius alias num
+    type Fahrenheit alias num
+    type Kelvin alias num
+  
+    (f: Fahrenheit): Celsius | Kelvin {
+      return f - 32 * 5 / 9 as Celsius;
+      return f - 32 * 5 / 9 + 273.15 as Kelvin;
+    }
+    (f: Fahrenheit): Kelvin {
+      c := *Celsius {
+        k: Kelvin {
+            return k;
+        }
+      };
+      return c + 273.15 as Kelvin;
+    }
+    `,
+    [].join('\n')
+  );
+
+  testToString(
     'can request variables',
     new Main(),
     `
@@ -73,7 +97,7 @@ type Kelvin alias num
       'fn (c: Celsius): Kelvin [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius]',
       'return (-(<c>, 273) as Kelvin) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, c: Celsius]',
       'fn (f: Fahrenheit): Kelvin [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, f: Fahrenheit]',
-      'return (-(Celsius fetched from scope, 273) as Kelvin) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, f: Fahrenheit]',
+      'return (-(Celsius fetched from scope , 273) as Kelvin) [{Celsius is num}, {Fahrenheit is num}, {Kelvin is num}, f: Fahrenheit]',
     ].join('\n')
   );
 });
