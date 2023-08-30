@@ -23,6 +23,9 @@ export type SemanticState = Omit<State, 'tree'> & {
 
 export class SemanticAnalyzer {
   analyze(state: State, parent?: ParseTree): ParseTree {
+    if (parent == null) {
+      ParseTree.errors = []; //reset errors when running from root
+    }
     if (state.invisibleNode) {
       if (state.parts.length > 1)
         throw new Error('cannot have invisible nodes with more than one child');

@@ -43,7 +43,7 @@ type Kelvin alias num
     return *Celsius + 273.15 as Kelvin;
   }
       `,
-    /.*asd/
+    /.*covered.*all cases.*/
   );
 
   testToString(
