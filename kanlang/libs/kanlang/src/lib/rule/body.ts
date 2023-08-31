@@ -1,6 +1,7 @@
 import { ParseTree } from '../parseTree';
 import { Expression, Return } from './expression';
 import { NewRuleType, Rule } from './rule';
+import { TypeRequest, TypeRequestTree } from './typeRequest';
 
 export class Body extends Rule {
   get rules(): NewRuleType[] {
@@ -34,6 +35,15 @@ export class Body extends Rule {
         parts: [new Expression(), ['punct', ';'], this],
         treeClass: class extends ParseTree {
           toJs(): string {
+            const typeRequests =
+              this.getChildrenOfType<TypeRequestTree>(TypeRequestTree);
+            if (typeRequests.length > 0) {
+              return `\n${typeRequests
+                .map((v) => v.getHoistJs())
+                .join(
+                  ';'
+                )};\n\n ${this.children[0].toJs()};\n${this.children[1].toJs()}`;
+            }
             return `${this.children[0].toJs()};\n${this.children[1].toJs()}`;
           }
           toString(): string {

@@ -2,20 +2,41 @@ import { ParseTree } from '../parseTree';
 import { Body } from './body';
 import { NewRuleType, Rule } from './rule';
 
+export class TypeRequestTree extends ParseTree {
+  getHoistJs(): string {
+    return '';
+  }
+}
+
 export class TypeRequest extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
         root: 0,
         parts: [['operator', '*'], 'identifier', new TypeRequestCatch()],
-        treeClass: class extends ParseTree {
-          toJs(): string {
+        treeClass: class extends TypeRequestTree {
+          getHoistJs(): string {
             const catchTree = this.children[0] as TypeRequestCatchTree;
             if (catchTree) {
-              return `(data) => {if(data.${this.type()}) return data.${this.type()}; else /* return outer function */}(${
+              return `let ___${this.type()} = ${
                 this.getTransformationPath(this.type()).toJs()[0]
-              })`;
+              };
+              if(!___${this.type()}.${this.type()}) {
+                //handle it
+                ${catchTree
+                  .getCatchVars()
+                  .map(
+                    (type) =>
+                      `if(___${this.type()}.${type.type}) {
+                        let ${type.name} = ___${this.type()}.${type.type};
+                        ${catchTree.toJs()}
+                      }`
+                  )
+                  .join(';\n')}
+              }`;
             }
+          }
+          toJs(): string {
             //TODO: how to handle recursion?
             return this.getTransformationPath(this.type()).toJs()[0]; //TODO: should add metadata and do a smart select, not just the first option
           }
@@ -56,6 +77,7 @@ export class TypeRequest extends Rule {
 
 abstract class TypeRequestCatchTree extends ParseTree {
   abstract getCatchTypes(): string[];
+  abstract getCatchVars(): { name: string; type: string }[];
 }
 
 export class TypeRequestCatch extends Rule {
@@ -79,11 +101,22 @@ export class TypeRequestCatch extends Rule {
           ['punct', '}'],
         ],
         treeClass: class extends TypeRequestCatchTree {
+          getCatchVars(): { name: string; type: string }[] {
+            return [
+              {
+                name: this.tokenValue(1),
+                type: this.type(),
+              },
+            ];
+          }
           getCatchTypes(): string[] {
             return [this.type()];
           }
           toString(): string {
             return `catch {${this.children[0].toString()}}`;
+          }
+          toJs(): string {
+            return this.children[0].toJs();
           }
           type(): string {
             return this.tokenValue(3);

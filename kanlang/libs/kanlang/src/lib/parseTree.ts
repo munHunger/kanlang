@@ -114,6 +114,13 @@ export class ParseTree {
     }
   }
 
+  getChildrenOfType<T extends ParseTree>(c: typeof ParseTree): T[] {
+    return this.children
+      .filter((child) => child instanceof c)
+      .concat(this.children.map((child) => child.getChildrenOfType(c)).flat())
+      .map((child) => child as T);
+  }
+
   toJs(): string {
     throw new Error(
       `Seems like there is a missing code generation step for rule ${this.rule.ruleName}`
