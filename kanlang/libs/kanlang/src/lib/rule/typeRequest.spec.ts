@@ -46,7 +46,7 @@ type Kelvin alias num
     /.*covered.*all cases.*/
   );
 
-  testToString(
+  testCodeGen(
     'can request when there are multiple return types if that is handled',
     new Main(),
     `
@@ -67,7 +67,11 @@ type Kelvin alias num
       return c + 273.15 as Kelvin;
     }
     `,
-    [].join('\n')
+    [
+      'function Fahrenheit___Celsius_Kelvin(f){return {Celsius: f - 32 * 5 / 9};',
+      'return {Kelvin: f - 32 * 5 / 9 + 273.15};}',
+      'function Fahrenheit___Kelvin(f){const c}',
+    ].join('\n')
   );
 
   testToString(

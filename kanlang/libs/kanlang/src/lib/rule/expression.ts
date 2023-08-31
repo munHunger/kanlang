@@ -20,7 +20,12 @@ export class Return extends Rule {
             return this.children[0].type();
           }
           toJs(): string {
-            return `return ${this.children[0].toJs()}`;
+            const isMultipleReturn =
+              (this.getParentOfType(Function) as FunctionParseTree).returnType
+                .length > 1;
+            if (isMultipleReturn)
+              return `return {${this.returnType}: ${this.children[0].toJs()}}`;
+            else return `return ${this.children[0].toJs()}`;
           }
           toString(): string {
             return `return ${this.children[0].toString()}`;

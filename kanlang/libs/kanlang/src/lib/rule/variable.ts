@@ -15,6 +15,9 @@ export class VariableAssignment extends Rule {
           new Expression(),
         ],
         treeClass: class extends ParseTree {
+          toJs(): string {
+            return `var ${this.tokenValue(0)} = ${this.children[0].toJs()}`;
+          }
           toString(): string {
             return `${this.tokenValue(
               0

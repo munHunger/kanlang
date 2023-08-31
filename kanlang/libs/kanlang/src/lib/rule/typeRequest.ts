@@ -10,6 +10,12 @@ export class TypeRequest extends Rule {
         parts: [['operator', '*'], 'identifier', new TypeRequestCatch()],
         treeClass: class extends ParseTree {
           toJs(): string {
+            const catchTree = this.children[0] as TypeRequestCatchTree;
+            if (catchTree) {
+              return `(data) => {if(data.${this.type()}) return data.${this.type()}; else /* return outer function */}(${
+                this.getTransformationPath(this.type()).toJs()[0]
+              })`;
+            }
             //TODO: how to handle recursion?
             return this.getTransformationPath(this.type()).toJs()[0]; //TODO: should add metadata and do a smart select, not just the first option
           }
@@ -31,18 +37,25 @@ export class TypeRequest extends Rule {
               const possibleOutputs = path.children
                 .filter((child) => child.transformation)
                 .map((child) => child.transformation.to);
-              // if (possibleOutputs.every((output) => output.length > 1))
-              //   this.addError(
-              //     `You haven't covered all cases: ${[
-              //       ...new Set(possibleOutputs.flat()),
-              //     ]}`
-              //   );
+              const catchTree = this.children[0] as TypeRequestCatchTree;
+              if (catchTree) {
+                //TODO: check if the correct cases are covered
+              } else if (possibleOutputs.every((output) => output.length > 1))
+                this.addError(
+                  `You haven't covered all cases: ${[
+                    ...new Set(possibleOutputs.flat()),
+                  ]}`
+                );
             }
           }
         },
       },
     ];
   }
+}
+
+abstract class TypeRequestCatchTree extends ParseTree {
+  abstract getCatchTypes(): string[];
 }
 
 export class TypeRequestCatch extends Rule {
@@ -65,7 +78,10 @@ export class TypeRequestCatch extends Rule {
           ['punct', '}'],
           ['punct', '}'],
         ],
-        treeClass: class extends ParseTree {
+        treeClass: class extends TypeRequestCatchTree {
+          getCatchTypes(): string[] {
+            return [this.type()];
+          }
           toString(): string {
             return `catch {${this.children[0].toString()}}`;
           }
