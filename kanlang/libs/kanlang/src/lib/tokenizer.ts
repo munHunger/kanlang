@@ -102,7 +102,7 @@ export class Tokenizer {
           lineNumber,
           character,
           input,
-          `unrecognized character`
+          `unrecognized character '${character}'`
         );
       }
     }

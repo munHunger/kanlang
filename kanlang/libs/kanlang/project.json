@@ -11,7 +11,7 @@
       "options": {
         "platform": "node",
         "outputPath": "dist/libs/kanlang",
-        "format": ["cjs"],
+        "format": ["esm"],
         "bundle": true,
         "main": "libs/kanlang/src/index.ts",
         "tsConfig": "libs/kanlang/tsconfig.json",
