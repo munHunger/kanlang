@@ -83,6 +83,9 @@ export class Expression extends Rule {
           toString(): string {
             return `${this.tokenValue(0)}`;
           }
+          toJs(): string {
+            return `${this.tokenValue(0)}`;
+          }
         },
       },
       {

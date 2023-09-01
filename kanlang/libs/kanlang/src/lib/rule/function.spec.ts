@@ -6,7 +6,7 @@ describe('function', () => {
     'function calls work',
     new Function(),
     '(a: num, b: boolean):num \n{return a + 1;}',
-    'function num_boolean___num(a, b){return a + 1;}'
+    'function num_boolean___num(a, b){\nreturn a + 1;}'
   );
   testToString(
     'function calls work',

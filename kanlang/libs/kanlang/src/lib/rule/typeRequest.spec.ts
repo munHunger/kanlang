@@ -21,9 +21,12 @@ type Kelvin alias num
 }
     `,
     [
-      'function Fahrenheit___Celsius(f){return f - 32 * 5 / 9;}',
-      'function Celsius___Kelvin(c){return c + 273.15;}',
-      'function Fahrenheit___Kelvin(f){return Celsius___Kelvin(Fahrenheit___Celsius(f));}',
+      'function Fahrenheit___Celsius(f){',
+      'return f - 32 * 5 / 9;}',
+      'function Celsius___Kelvin(c){',
+      'return c + 273.15;}',
+      'function Fahrenheit___Kelvin(f){',
+      'return Celsius___Kelvin(Fahrenheit___Celsius(f));}',
     ].join('\n')
   );
 
@@ -68,7 +71,8 @@ type Kelvin alias num
     }
     `,
     [
-      'function Fahrenheit___Celsius_Kelvin(f){return {Celsius: f - 32 * 5 / 9};',
+      'function Fahrenheit___Celsius_Kelvin(f){',
+      'return {Celsius: f - 32 * 5 / 9};',
       'return {Kelvin: f - 32 * 5 / 9 + 273.15};}',
       'function Fahrenheit___Kelvin(f){',
       'let ___Celsius = Fahrenheit___Celsius_Kelvin(f);',

@@ -42,7 +42,7 @@ export class Function extends Rule {
           toJs(): string {
             return `function ${
               this.functionTransform.functionName
-            }(${this.children[0].toJs()}){${this.children[2].toJs()}}`;
+            }(${this.children[0].toJs()}){\n${this.children[2].toJs()}}`;
           }
           validate(): void {
             this.addTransformation(this.functionTransform);
