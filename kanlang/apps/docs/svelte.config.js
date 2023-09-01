@@ -7,7 +7,6 @@ function highlighter(code, lang) {
 	if (lang === 'kanlang') {
 		const tokenizer = new kanlang.Tokenizer();
 		const tokens = tokenizer.tokenize(code);
-		console.log('highlighting code', tokens);
 
 		const typeToClass = (type) => {
 			switch (type) {
