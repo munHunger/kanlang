@@ -46,9 +46,12 @@ export class ParseTree {
     );
   }
 
-  getTransformationPath(type: string): TransformationTree {
+  getTransformationPath(
+    type: string,
+    blockVariable?: string
+  ): TransformationTree {
     const varInScope = this.getAllDeclarationsInScope()
-      .filter((v) => v.variable)
+      .filter((v) => v.variable && blockVariable != v.name)
       .find((v) => v.variable.type === type);
     if (varInScope) return new TransformationTree(undefined, varInScope);
     const root = new TransformationTree();
@@ -59,7 +62,7 @@ export class ParseTree {
         else {
           const tranform = new TransformationTree(producer);
           tranform.children = producer.from.map((arg) =>
-            this.getTransformationPath(arg)
+            this.getTransformationPath(arg, blockVariable)
           );
           return tranform;
         }

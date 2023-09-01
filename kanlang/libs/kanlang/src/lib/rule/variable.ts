@@ -14,18 +14,19 @@ export class VariableAssignment extends Rule {
           ['operator', '='],
           new Expression(),
         ],
-        treeClass: class extends ParseTree {
+        treeClass: class extends VariableTree {
+          getName(): string {
+            return this.tokenValue(0);
+          }
           toJs(): string {
-            return `var ${this.tokenValue(0)} = ${this.children[0].toJs()}`;
+            return `var ${this.getName()} = ${this.children[0].toJs()}`;
           }
           toString(): string {
-            return `${this.tokenValue(
-              0
-            )} := ${this.children[0].toString()} ${this.printScope()}`;
+            return `${this.getName()} := ${this.children[0].toString()} ${this.printScope()}`;
           }
           validate(): void {
             this.addToScope({
-              name: this.tokenValue(0),
+              name: this.getName(),
               variable: {
                 constant: false,
                 type: this.children[0].type(),

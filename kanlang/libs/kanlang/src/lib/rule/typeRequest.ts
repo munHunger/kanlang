@@ -1,6 +1,7 @@
 import { ParseTree } from '../parseTree';
 import { Body } from './body';
 import { NewRuleType, Rule } from './rule';
+import { VariableAssignment, VariableTree } from './variable';
 
 export class TypeRequestTree extends ParseTree {
   getHoistJs(): string {
@@ -16,13 +17,19 @@ export class TypeRequest extends Rule {
         parts: [['operator', '*'], 'identifier', new TypeRequestCatch()],
         treeClass: class extends TypeRequestTree {
           getHoistJs(): string {
+            const variable = this.getParentOfType(
+              VariableAssignment
+            ) as VariableTree;
+
             const catchTree = this.children[0] as TypeRequestCatchTree;
             if (catchTree) {
               return `let ___${this.type()} = ${
-                this.getTransformationPath(this.type()).toJs()[0]
+                this.getTransformationPath(
+                  this.type(),
+                  variable?.getName()
+                ).toJs()[0]
               };
               if(!___${this.type()}.${this.type()}) {
-                //handle it
                 ${catchTree
                   .getCatchVars()
                   .map(
@@ -37,8 +44,7 @@ export class TypeRequest extends Rule {
             }
           }
           toJs(): string {
-            //TODO: how to handle recursion?
-            return this.getTransformationPath(this.type()).toJs()[0]; //TODO: should add metadata and do a smart select, not just the first option
+            return `___${this.type()}.${this.type()}`;
           }
           type(): string {
             return this.tokenValue(1);
