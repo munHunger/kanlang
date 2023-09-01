@@ -23,6 +23,13 @@ export type SemanticState = Omit<State, 'tree'> & {
 
 export class SemanticAnalyzer {
   analyze(state: State, parent?: ParseTree): ParseTree {
+    if (parent == null) {
+      ParseTree.errors = []; //reset errors when running from root
+    }
+    if (state.tree.length == 0) {
+      //this is the epsilon case
+      return;
+    }
     if (state.invisibleNode) {
       if (state.parts.length > 1)
         throw new Error('cannot have invisible nodes with more than one child');
@@ -37,11 +44,14 @@ export class SemanticAnalyzer {
     }
     const tree = new state.treeClass(state.ruleRef, state, parent);
 
+    tree.preValidate();
+
     state.tree
       .filter((child) => !this.childIsToken(child))
       .map((child) => {
         return this.analyze(child as State, tree);
       })
+      .filter((v) => v) //removes epsilon
       .forEach((child) => tree.addChild(child));
 
     tree.validate();

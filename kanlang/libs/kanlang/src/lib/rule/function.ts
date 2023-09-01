@@ -1,10 +1,10 @@
-import { ParseTree } from '../parseTree';
+import { ParseTree, Transformation } from '../parseTree';
 import { Body } from './body';
 import { ReturnExpressionTree } from './expression';
 import { NewRuleType, Rule } from './rule';
 
 export abstract class FunctionParseTree extends ParseTree {
-  abstract get returnType(): string;
+  abstract get returnType(): string[];
 }
 
 export class Function extends Rule {
@@ -17,42 +17,65 @@ export class Function extends Rule {
           new ArgumentArray(),
           ['punct', ')'],
           ['punct', ':'],
-          'identifier',
+          new ReturnType(),
           ['punct', '{'],
           new Body(),
           ['punct', '}'],
         ],
         treeClass: class extends FunctionParseTree {
-          get returnType(): string {
-            return this.tokenValue(4);
+          get returnType(): string[] {
+            return this.getChildrenOfType<ReturnTypeParseTree>(
+              ReturnTypeParseTree
+            )[0].types;
           }
           get argTypes(): string[] {
-            return (
-              (this.children[0] as ArgumentParseTree).types || [
-                this.children[0].type(),
-              ]
-            );
+            const argArray =
+              this.getChildrenOfType<ArgumentParseTree>(ArgumentParseTree)[0];
+            if (argArray) return argArray.types;
+            const arg = this.getChildrenOfRuleType(Argument)[0];
+            if (arg) return [arg.type()];
+            return [];
+          }
+          get functionTransform(): Transformation {
+            return new Transformation(this.argTypes, this.returnType);
           }
           toJs(): string {
-            return `function ${this.argTypes.join('_')}_${
-              this.returnType
-            }(${this.children[0].toJs()}){${this.children[1].toJs()}}`;
+            return `function ${
+              this.functionTransform.functionName
+            }(${this.children[0].toJs()}){\n${this.children[2].toJs()}}`;
           }
           validate(): void {
-            this.addTransformation({
-              from: this.argTypes,
-              to: this.returnType,
+            this.addTransformation(this.functionTransform);
+            const ret =
+              this.getChildrenOfType<ReturnExpressionTree>(
+                ReturnExpressionTree
+              );
+            if (ret.length === 0)
+              this.addError('missing return statement from function');
+            ret.forEach((type) => {
+              if (!this.returnType.includes(type.returnType))
+                this.addError(
+                  `type missmatch. Cannot return ${
+                    type.returnType
+                  } in function expecting [${this.returnType.join(', ')}]`
+                );
             });
-            const body = this.children[1];
-            const ret = body.children.find(
-              (child) => child instanceof ReturnExpressionTree
-            );
-            if (!ret) this.addError('missing return statement from function');
+            if (
+              !this.returnType.every((type) =>
+                ret.find((r) => r.returnType === type)
+              )
+            ) {
+              this.addError(
+                `Type error. Not all return types are matched.\nExpecting ${
+                  this.returnType
+                }\nReceived ${ret.map((r) => r.returnType)}`
+              );
+            }
           }
           toString(): string {
-            return `fn (${this.children[0].toString()}): ${this.tokenValue(
-              4
-            )} ${this.printScope()}\n${this.children[1].toString()}`;
+            return `fn (${this.children[0].toString()}): ${this.returnType.join(
+              ' | '
+            )} ${this.printScope()}\n${this.children[2].toString()}`;
           }
         },
       },
@@ -60,8 +83,42 @@ export class Function extends Rule {
   }
 }
 
-export abstract class ArgumentParseTree extends ParseTree {
-  abstract get types(): string[];
+export class ReturnTypeParseTree extends ParseTree {
+  get types(): string[] {
+    return [];
+  }
+}
+export class ReturnType extends Rule {
+  get rules(): NewRuleType[] {
+    return [
+      {
+        root: 0,
+        parts: [this, ['punct', '|'], 'identifier'],
+        treeClass: class extends ReturnTypeParseTree {
+          get types(): string[] {
+            return (this.children[0] as ReturnTypeParseTree).types.concat([
+              this.tokenValue(2),
+            ]);
+          }
+        },
+      },
+      {
+        root: 0,
+        parts: ['identifier'],
+        treeClass: class extends ReturnTypeParseTree {
+          get types(): string[] {
+            return [this.tokenValue(0)];
+          }
+        },
+      },
+    ];
+  }
+}
+
+export class ArgumentParseTree extends ParseTree {
+  get types(): string[] {
+    return [];
+  }
 }
 export class ArgumentArray extends Rule {
   get rules(): NewRuleType[] {

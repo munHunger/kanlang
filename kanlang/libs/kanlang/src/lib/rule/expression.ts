@@ -5,8 +5,10 @@ import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
 import { VariableAssignment } from './variable';
 
-export abstract class ReturnExpressionTree extends ParseTree {
-  abstract get returnType(): string;
+export class ReturnExpressionTree extends ParseTree {
+  get returnType(): string {
+    return '';
+  }
 }
 
 export class Return extends Rule {
@@ -20,7 +22,12 @@ export class Return extends Rule {
             return this.children[0].type();
           }
           toJs(): string {
-            return `return ${this.children[0].toJs()}`;
+            const isMultipleReturn =
+              (this.getParentOfType(Function) as FunctionParseTree).returnType
+                .length > 1;
+            if (isMultipleReturn)
+              return `return {${this.returnType}: ${this.children[0].toJs()}}`;
+            else return `return ${this.children[0].toJs()}`;
           }
           toString(): string {
             return `return ${this.children[0].toString()}`;
@@ -28,10 +35,6 @@ export class Return extends Rule {
           validate(): void {
             const fn = this.getParentOfType(Function) as FunctionParseTree;
             if (!fn) this.addError('cannot return outside of a function');
-            if (fn.returnType != this.returnType)
-              this.addError(
-                `type missmatch. Cannot return ${this.returnType} in function expecting ${fn.returnType}`
-              );
           }
         },
       },
@@ -78,6 +81,9 @@ export class Expression extends Rule {
             return 'boolean';
           }
           toString(): string {
+            return `${this.tokenValue(0)}`;
+          }
+          toJs(): string {
             return `${this.tokenValue(0)}`;
           }
         },

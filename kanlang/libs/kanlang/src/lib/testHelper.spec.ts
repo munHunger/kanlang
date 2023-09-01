@@ -5,7 +5,6 @@ import { CodeGenerator } from './codeGen';
 import { Tokenizer } from './tokenizer';
 const tokenizer = new Tokenizer();
 
-const semantic = new SemanticAnalyzer();
 const codeGenerator = new CodeGenerator();
 
 export function testCodeGen(
@@ -17,9 +16,16 @@ export function testCodeGen(
   const parser = new EarleyParser(startingRule);
   it(message + ':\n' + input, () =>
     expect(
-      codeGenerator.generate(
-        semantic.analyze(parser.parse(tokenizer.tokenize(input)))
-      )
+      codeGenerator
+        .generate(
+          new SemanticAnalyzer().analyze(
+            parser.parse(tokenizer.tokenize(input))
+          )
+        )
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((v) => v)
+        .join('\n')
     ).toEqual(expected)
   );
 }
@@ -33,7 +39,9 @@ export function testToString(
   const parser = new EarleyParser(startingRule);
   it(message + ':\n' + input, () =>
     expect(
-      semantic.analyze(parser.parse(tokenizer.tokenize(input))).toString()
+      new SemanticAnalyzer()
+        .analyze(parser.parse(tokenizer.tokenize(input)))
+        .toString()
     ).toEqual(expected)
   );
 }
@@ -47,7 +55,9 @@ export function testThrows(
   const parser = new EarleyParser(startingRule);
   it(message + ':' + input, () =>
     expect(() =>
-      semantic.analyze(parser.parse(tokenizer.tokenize(input))).toString()
+      new SemanticAnalyzer()
+        .analyze(parser.parse(tokenizer.tokenize(input)))
+        .toString()
     ).toThrow(expectedError)
   );
 }
