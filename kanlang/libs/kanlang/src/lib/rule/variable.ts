@@ -19,7 +19,7 @@ export class VariableAssignment extends Rule {
             return this.tokenValue(0);
           }
           toJs(): string {
-            return `var ${this.getName()} = ${this.children[0].toJs()}`;
+            return `let ${this.getName()} = ${this.children[0].toJs()}`;
           }
           toString(): string {
             return `${this.getName()} := ${this.children[0].toString()} ${this.printScope()}`;

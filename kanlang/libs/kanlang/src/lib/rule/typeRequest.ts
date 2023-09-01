@@ -39,7 +39,7 @@ export class TypeRequest extends Rule {
                         ${catchTree.toJs()}
                       }`
                   )
-                  .join(';\n')}
+                  .join('\n')}
               }`;
             }
           }

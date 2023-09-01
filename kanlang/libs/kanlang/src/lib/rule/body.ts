@@ -41,8 +41,8 @@ export class Body extends Rule {
               return `\n${typeRequests
                 .map((v) => v.getHoistJs())
                 .join(
-                  ';'
-                )};\n\n ${this.children[0].toJs()};\n${this.children[1].toJs()}`;
+                  ''
+                )}\n\n ${this.children[0].toJs()};\n${this.children[1].toJs()}`;
             }
             return `${this.children[0].toJs()};\n${this.children[1].toJs()}`;
           }

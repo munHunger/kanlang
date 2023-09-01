@@ -70,7 +70,16 @@ type Kelvin alias num
     [
       'function Fahrenheit___Celsius_Kelvin(f){return {Celsius: f - 32 * 5 / 9};',
       'return {Kelvin: f - 32 * 5 / 9 + 273.15};}',
-      'function Fahrenheit___Kelvin(f){const c}',
+      'function Fahrenheit___Kelvin(f){',
+      'let ___Celsius = Fahrenheit___Celsius_Kelvin(f);',
+      'if(!___Celsius.Celsius) {',
+      'if(___Celsius.Kelvin) {',
+      'let k = ___Celsius.Kelvin;',
+      'return k;',
+      '}',
+      '}',
+      'let c = ___Celsius.Celsius;',
+      'return c + 273.15;}',
     ].join('\n')
   );
 

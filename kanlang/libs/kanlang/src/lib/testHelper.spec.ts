@@ -16,9 +16,16 @@ export function testCodeGen(
   const parser = new EarleyParser(startingRule);
   it(message + ':\n' + input, () =>
     expect(
-      codeGenerator.generate(
-        new SemanticAnalyzer().analyze(parser.parse(tokenizer.tokenize(input)))
-      )
+      codeGenerator
+        .generate(
+          new SemanticAnalyzer().analyze(
+            parser.parse(tokenizer.tokenize(input))
+          )
+        )
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((v) => v)
+        .join('\n')
     ).toEqual(expected)
   );
 }
