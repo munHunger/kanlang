@@ -2,10 +2,21 @@ import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 import { mdsvex } from 'mdsvex';
 
+function highlighter(code, lang) {
+	code = code
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;')
+		.replace(/{/g, '&#123;');
+	return `<pre class="language-${lang}"><code class="language-${lang}">${code}</code></pre>`;
+}
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	extensions: ['.svelte', '.md'],
-	preprocess: [vitePreprocess(), mdsvex({ extension: 'md', highlight: {} })],
+	preprocess: [vitePreprocess(), mdsvex({ extension: 'md', highlight: { highlighter } })],
 	kit: {
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
 		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
