@@ -44,7 +44,8 @@ export class TypeRequest extends Rule {
             }
           }
           toJs(): string {
-            return `___${this.type()}.${this.type()}`;
+            if (this.children[0]) return `___${this.type()}.${this.type()}`;
+            else return this.getTransformationPath(this.type()).toJs()[0];
           }
           type(): string {
             return this.tokenValue(1);

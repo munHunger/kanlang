@@ -117,6 +117,10 @@ export class ParseTree {
     }
   }
 
+  getChildrenOfRuleType(c: typeof Rule): ParseTree[] {
+    return this.children.filter((child) => child.rule instanceof c);
+  }
+
   getChildrenOfType<T extends ParseTree>(c: typeof ParseTree): T[] {
     return this.children
       .filter((child) => child instanceof c)

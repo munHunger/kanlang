@@ -24,14 +24,17 @@ export class Function extends Rule {
         ],
         treeClass: class extends FunctionParseTree {
           get returnType(): string[] {
-            return (this.children[1] as ReturnTypeParseTree).types;
+            return this.getChildrenOfType<ReturnTypeParseTree>(
+              ReturnTypeParseTree
+            )[0].types;
           }
           get argTypes(): string[] {
-            return (
-              (this.children[0] as ArgumentParseTree).types || [
-                this.children[0].type(),
-              ]
-            );
+            const argArray =
+              this.getChildrenOfType<ArgumentParseTree>(ArgumentParseTree)[0];
+            if (argArray) return argArray.types;
+            const arg = this.getChildrenOfRuleType(Argument)[0];
+            if (arg) return [arg.type()];
+            return [];
           }
           get functionTransform(): Transformation {
             return new Transformation(this.argTypes, this.returnType);
@@ -43,12 +46,10 @@ export class Function extends Rule {
           }
           validate(): void {
             this.addTransformation(this.functionTransform);
-            const body = this.children[2];
-            const ret = body
-              .flatten()
-              .filter(
-                (child) => child instanceof ReturnExpressionTree
-              ) as ReturnExpressionTree[];
+            const ret =
+              this.getChildrenOfType<ReturnExpressionTree>(
+                ReturnExpressionTree
+              );
             if (ret.length === 0)
               this.addError('missing return statement from function');
             ret.forEach((type) => {
@@ -67,9 +68,7 @@ export class Function extends Rule {
               this.addError(
                 `Type error. Not all return types are matched.\nExpecting ${
                   this.returnType
-                }\nReceived ${ret.map((r) => r.returnType)} ${body.children.map(
-                  (child) => child.rule.ruleName
-                )}`
+                }\nReceived ${ret.map((r) => r.returnType)}`
               );
             }
           }
@@ -84,8 +83,10 @@ export class Function extends Rule {
   }
 }
 
-export abstract class ReturnTypeParseTree extends ParseTree {
-  abstract get types(): string[];
+export class ReturnTypeParseTree extends ParseTree {
+  get types(): string[] {
+    return [];
+  }
 }
 export class ReturnType extends Rule {
   get rules(): NewRuleType[] {
@@ -114,8 +115,10 @@ export class ReturnType extends Rule {
   }
 }
 
-export abstract class ArgumentParseTree extends ParseTree {
-  abstract get types(): string[];
+export class ArgumentParseTree extends ParseTree {
+  get types(): string[] {
+    return [];
+  }
 }
 export class ArgumentArray extends Rule {
   get rules(): NewRuleType[] {

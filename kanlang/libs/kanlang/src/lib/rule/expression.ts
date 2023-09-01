@@ -5,8 +5,10 @@ import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
 import { VariableAssignment } from './variable';
 
-export abstract class ReturnExpressionTree extends ParseTree {
-  abstract get returnType(): string;
+export class ReturnExpressionTree extends ParseTree {
+  get returnType(): string {
+    return '';
+  }
 }
 
 export class Return extends Rule {
