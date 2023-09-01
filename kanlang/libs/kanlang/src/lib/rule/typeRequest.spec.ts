@@ -58,7 +58,9 @@ type Kelvin alias num
     type Kelvin alias num
   
     (f: Fahrenheit): Celsius | Kelvin {
-      return f - 32 * 5 / 9 as Celsius;
+      if false {
+        return f - 32 * 5 / 9 as Celsius;
+      }
       return f - 32 * 5 / 9 + 273.15 as Kelvin;
     }
     (f: Fahrenheit): Kelvin {
@@ -72,7 +74,7 @@ type Kelvin alias num
     `,
     [
       'function Fahrenheit___Celsius_Kelvin(f){',
-      'return {Celsius: f - 32 * 5 / 9};',
+      'if (false) {return {Celsius: f - 32 * 5 / 9};};',
       'return {Kelvin: f - 32 * 5 / 9 + 273.15};}',
       'function Fahrenheit___Kelvin(f){',
       'let ___Celsius = Fahrenheit___Celsius_Kelvin(f);',

@@ -40,7 +40,7 @@ export class Body extends Rule {
       },
       {
         root: 0,
-        parts: [new If(), ['punct', ';'], this],
+        parts: [new If(), this],
         treeClass: class extends BodyTree {},
       },
       {
