@@ -18,8 +18,7 @@ jobs:
         run: |
           cd kanlang
           npm install
-          npm run build
-          npm run test
+          npx nx test kanlang
   check-version-update:
     runs-on: ubuntu-latest
     steps:

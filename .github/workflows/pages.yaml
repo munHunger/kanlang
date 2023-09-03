@@ -35,6 +35,10 @@ jobs:
           cd kanlang
           npm install
           npx nx package compiler
+          cd apps/docs
+          npm install
+          cd ../..
+          npx nx build docs
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
