@@ -1,4 +1,10 @@
+<script>
+	import Version from './Version.svelte'
+</script>
+
 # Kanlang
+
+<Version />
 
 What is kanlang?
 
