@@ -1,6 +1,8 @@
 //import tm from './assets/kanlang.tmLanguage.json';
 import fs from 'fs';
+import pkg from '../../../package.json';
 import { Tokenizer, compile } from '@kanlang/kanlang';
+import { exit } from 'process';
 
 const tokenizer = new Tokenizer();
 const argArray = process.argv.slice(2);
@@ -15,6 +17,11 @@ if (argArray.length === 0) {
     }
     if (argArray[i] == '-h') {
       printHelp();
+      exit(0);
+    }
+    if (argArray[i] == '-v') {
+      console.log('Version: ' + pkg.version);
+      exit(0);
     }
   }
   if (args.tmLocation) {
@@ -34,6 +41,7 @@ The Kanlang compiler
 
 OPTIONS:
    -h                               print this help message
+   -v                               print the version of the compiler
    --generate-tmlanguage <output>   generate a text mate language file for kanlang 
                                     at the output`);
 }

@@ -4,6 +4,44 @@
   "sourceRoot": "libs/kanlang/src",
   "projectType": "library",
   "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/libs/kanlang",
+        "format": ["esm"],
+        "bundle": true,
+        "main": "libs/kanlang/src/index.ts",
+        "tsConfig": "libs/kanlang/tsconfig.json",
+        "assets": [
+          {
+            "input": "./libs/kanlang/src/assets",
+            "glob": "**/*.*",
+            "output": "./assets"
+          }
+        ],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
