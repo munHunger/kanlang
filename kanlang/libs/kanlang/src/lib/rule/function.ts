@@ -1,5 +1,5 @@
 import { ParseTree, Transformation } from '../parseTree';
-import { Body } from './body';
+import { Body, BodyTree } from './body';
 import { ReturnExpressionTree } from './expression';
 import { InlineType } from './inlineType';
 import { NewRuleType, Rule } from './rule';
@@ -41,9 +41,20 @@ export class Function extends Rule {
             return new Transformation(this.argTypes, this.returnType);
           }
           toJs(): string {
-            return `function ${
-              this.functionTransform.functionName
-            }(${this.children[0].toJs()}){\n${this.children[2].toJs()}}`;
+            const argArray =
+              this.getChildrenOfType<ArgumentParseTree>(ArgumentParseTree)[0];
+            const arg = this.getChildrenOfRuleType(Argument)[0];
+            if (
+              this.returnType.length == 1 &&
+              this.returnType[0] == 'SysCode'
+            ) {
+              var mainCall = '\n___SysCode();';
+            }
+            return `function ${this.functionTransform.functionName}(${
+              argArray?.toJs() || arg?.toJs() || ''
+            }){\n${this.getChildrenOfType<BodyTree>(BodyTree)[0].toJs()}}${
+              mainCall || ''
+            }`;
           }
           validate(): void {
             this.addTransformation(this.functionTransform);
@@ -101,6 +112,9 @@ export class ReturnType extends Rule {
               this.children[1].type(),
             ]);
           }
+          toJs(): string {
+            return ''; //Types don't really exist in JS
+          }
           validate(): void {
             this.mergeParentScope();
             //type validation already taken care of
@@ -113,6 +127,9 @@ export class ReturnType extends Rule {
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
             return [this.children[0].type()];
+          }
+          toJs(): string {
+            return ''; //Types don't really exist in JS
           }
           validate(): void {
             this.mergeParentScope();

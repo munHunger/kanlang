@@ -155,3 +155,18 @@ you can inline the type by omitting the `type` keyword
 Note that in current version only num and boolean exists as primitive types.
 And there is no way to create complex types
 ```
+
+## Running the code
+
+After creating all rules you need a way to start the transformation.
+This is done by creating the `main` rule.
+
+```kanlang
+(): SysCode {
+
+}
+```
+
+`SysCode` is an alias for `boolean` and should indicate if the program terminated correctly or not.
+
+This rule will be the starting point of your program.

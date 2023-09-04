@@ -1,6 +1,7 @@
 import { CompileError } from './compileError';
 import { State } from './earley';
 import { levenshteinDistance } from './levenstein';
+import { Function } from './rule';
 import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
@@ -58,6 +59,18 @@ export class ParseTree {
     const root = new TransformationTree();
     root.children = this.allTransformations
       .filter((t) => t.to.includes(type))
+      .filter((t) => {
+        const fn = this.getParentOfTypeString('Function') as any;
+        if (fn) {
+          try {
+            if (fn.functionTransform.functionName == t.functionName)
+              return false; //Blocks recursion
+          } catch (e) {
+            //Do nothing, hacky, but likely in wrong compiler stage
+          }
+        }
+        return true;
+      })
       .map((producer) => {
         if (producer.from.length == 0) return new TransformationTree(producer);
         else {
@@ -111,10 +124,17 @@ export class ParseTree {
     return (this.state.tree[index] as Token).value;
   }
 
+  //TODO: can we merge these two?
   getParentOfType(c: typeof Rule): ParseTree | undefined {
     if (this.parent) {
       if (this.parent.rule instanceof c) return this.parent;
       else return this.parent.getParentOfType(c);
+    }
+  }
+  getParentOfTypeString(c: string): ParseTree | undefined {
+    if (this.parent) {
+      if (this.parent.rule.constructor.name === c) return this.parent;
+      else return this.parent.getParentOfTypeString(c);
     }
   }
 
@@ -142,10 +162,12 @@ export class ParseTree {
   printScope(): string {
     return `[${[
       ...new Set(
-        this.getAllDeclarationsInScope().map((d) => {
-          if (d.variable) return `${d.name}: ${d.variable.type}`;
-          else if (d.type) return `{${d.name} is ${d.type.alias}}`;
-        })
+        this.getAllDeclarationsInScope()
+          .filter((d) => d.name !== 'SysCode') //Don't care about builtins
+          .map((d) => {
+            if (d.variable) return `${d.name}: ${d.variable.type}`;
+            else if (d.type) return `{${d.name} is ${d.type.alias}}`;
+          })
       ),
     ]
       .sort((a, b) => a.localeCompare(b))
@@ -197,6 +219,13 @@ export class ParseTree {
     if (primitives.includes(type)) return; //Primitive types
     const declaration = this.getDeclaration(type);
     if (!declaration) {
+      if (type == 'SysCode') {
+        this.addToScope({
+          name: 'SysCode',
+          type: { alias: 'boolean' },
+        });
+        return this.validateIfTypeIsDefined(type);
+      }
       const allDeclarations = this.getAllDeclarationsInScope().map(
         (d) => d.name
       );
