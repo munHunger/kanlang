@@ -133,6 +133,24 @@ And these aliases can chain however long you want, for instance
 type NonFreezingCelsius alias Celsius
 ```
 
+Aliases can also be created inline of functions.
+So instead of writing
+
+```kanlang
+type Celsius alias num
+(c: Celsius): num {
+	//...
+}
+```
+
+you can inline the type by omitting the `type` keyword
+
+```kanlang
+(c: Celsius alias num): num {
+	//...
+}
+```
+
 ```info
 Note that in current version only num and boolean exists as primitive types.
 And there is no way to create complex types
