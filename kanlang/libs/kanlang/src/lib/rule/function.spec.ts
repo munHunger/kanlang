@@ -17,6 +17,15 @@ describe('function', () => {
       'return +(<a>, 1) [a: num, b: boolean]',
     ].join('\n')
   );
+  testToString(
+    'function calls work with inline types',
+    new Function(),
+    '(c: Celsius alias num):Fahrenheit alias num \n{return c + 1 as Fahrenheit;}',
+    [
+      'fn (c: Celsius): Fahrenheit [{Celsius is num}, {Fahrenheit is num}, c: Celsius]',
+      'return (+(<c>, 1) as Fahrenheit) [{Celsius is num}, {Fahrenheit is num}, c: Celsius]',
+    ].join('\n')
+  );
   testThrows(
     'throws error if return type is not function type',
     new Function(),

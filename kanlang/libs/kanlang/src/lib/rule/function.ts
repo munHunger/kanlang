@@ -1,6 +1,7 @@
 import { ParseTree, Transformation } from '../parseTree';
 import { Body } from './body';
 import { ReturnExpressionTree } from './expression';
+import { InlineType } from './inlineType';
 import { NewRuleType, Rule } from './rule';
 
 export abstract class FunctionParseTree extends ParseTree {
@@ -93,27 +94,29 @@ export class ReturnType extends Rule {
     return [
       {
         root: 0,
-        parts: [this, ['punct', '|'], 'identifier'],
+        parts: [this, ['punct', '|'], new InlineType()],
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
             return (this.children[0] as ReturnTypeParseTree).types.concat([
-              this.tokenValue(2),
+              this.children[1].type(),
             ]);
           }
           validate(): void {
-            this.validateIfTypeIsDefined(this.tokenValue(2));
+            this.mergeParentScope();
+            //type validation already taken care of
           }
         },
       },
       {
         root: 0,
-        parts: ['identifier'],
+        parts: [new InlineType()],
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
-            return [this.tokenValue(0)];
+            return [this.children[0].type()];
           }
           validate(): void {
-            this.validateIfTypeIsDefined(this.tokenValue(0));
+            this.mergeParentScope();
+            //Should be taken care of further down
           }
         },
       },
@@ -177,10 +180,10 @@ export class Argument extends Rule {
     return [
       {
         root: 0,
-        parts: ['identifier', ['punct', ':'], 'identifier'],
+        parts: ['identifier', ['punct', ':'], new InlineType()],
         treeClass: class extends ParseTree {
           type(): string {
-            return this.tokenValue(2);
+            return this.children[0].type();
           }
           toString(): string {
             return `${this.tokenValue(0)}: ${this.type()}`;
@@ -189,7 +192,6 @@ export class Argument extends Rule {
             return this.tokenValue(0);
           }
           validate(): void {
-            this.validateIfTypeIsDefined(this.type());
             this.addToScope({
               name: this.tokenValue(0),
               variable: {
@@ -197,6 +199,7 @@ export class Argument extends Rule {
                 type: this.type(),
               },
             });
+            this.mergeParentScope();
           }
         },
       },

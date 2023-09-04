@@ -130,8 +130,20 @@ export class Atom extends Rule {
           }
           validate(): void {
             const varName = (this.children[0] as VariableTree).getName();
-            if (!this.varIsOfType(varName, 'num'))
-              this.addError(`variable ${varName} is not numeric`);
+            const declaration = this.getDeclaration(varName);
+            if (
+              !this.varIsOfType(varName, 'num') &&
+              this.getSupertype(declaration.variable.type) != 'num'
+            )
+              this.addError(
+                `variable ${varName} of type ${
+                  declaration.variable.type
+                } is not numeric\n\n${JSON.stringify(
+                  this.getAllDeclarationsInScope(),
+                  null,
+                  2
+                )}`
+              );
           }
           type(): string {
             return this.children[0].type();

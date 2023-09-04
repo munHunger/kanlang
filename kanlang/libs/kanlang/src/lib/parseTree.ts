@@ -1,5 +1,6 @@
 import { CompileError } from './compileError';
 import { State } from './earley';
+import { levenshteinDistance } from './levenstein';
 import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
@@ -170,6 +171,7 @@ export class ParseTree {
   }
 
   mergeParentScope() {
+    if (!this.parent) return; //Mainly used for testing when the the root is nonsensical
     Object.values(this.scope).forEach((v) => this.parent.addToScope(v, true));
   }
 
@@ -194,13 +196,27 @@ export class ParseTree {
   validateIfTypeIsDefined(type: string) {
     if (primitives.includes(type)) return; //Primitive types
     const declaration = this.getDeclaration(type);
-    if (!declaration) this.addError(`${this.type()} does not exist as a type`);
+    if (!declaration) {
+      const allDeclarations = this.getAllDeclarationsInScope().map(
+        (d) => d.name
+      );
+      const close = allDeclarations
+        .sort(
+          (a, b) => levenshteinDistance(a, type) - levenshteinDistance(b, type) //TODO: pre-compute this as it is really slow
+        )
+        .slice(0, 3);
+      this.addError(
+        `'${this.type()}' does not exist as a type.\nDid you mean any of (${close.join(
+          ', '
+        )}) \nPossible types are: \n    ${allDeclarations.join('\n    ')}`
+      );
+    }
   }
 
   getSupertype(type: string): string {
     if (primitives.includes(type)) return type;
     const declaration = this.getDeclaration(type);
-    if (declaration.type?.alias) {
+    if (declaration?.type?.alias) {
       return this.getSupertype(declaration.type?.alias);
     }
     return type;

@@ -17,6 +17,7 @@ export class TypeDef extends Rule {
             return `{${this.tokenValue(1)} is ${this.tokenValue(3)}}`;
           }
           validate(): void {
+            this.validateIfTypeIsDefined(this.tokenValue(3));
             this.addToScope({
               name: this.tokenValue(1),
               type: {
