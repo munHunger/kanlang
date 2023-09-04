@@ -1,5 +1,5 @@
 import { ParseTree } from '../parseTree';
-import { Function } from './function';
+import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { TypeDef } from './typeDef';
 
