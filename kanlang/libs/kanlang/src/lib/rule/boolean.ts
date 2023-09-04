@@ -1,120 +1,25 @@
-import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
+import { operator } from '../tokenClasses';
+import { Expression } from './expression';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
 import { Variable, VariableTree } from './variable';
 
-export class Arithmetic extends Rule {
+export class BooleanRule extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
         root: 0,
-        parts: [new Sum()],
-        invisibleNode: true,
-      },
-    ];
-  }
-}
-
-export class Sum extends Rule {
-  get rules(): NewRuleType[] {
-    return [
-      {
-        root: 1,
-        parts: [new Product(), ['operator', '+'], this],
+        parts: ['boolean'],
         treeClass: class extends ParseTree {
+          type(): string {
+            return 'boolean';
+          }
           toString(): string {
-            return `+(${this.children[0].toString()}, ${this.children[1].toString()})`;
+            return `${this.tokenValue(0)}`;
           }
           toJs(): string {
-            return `${this.children[0].toJs()} + ${this.children[1].toJs()}`;
-          }
-          type(): string {
-            return 'num';
-          }
-        },
-      },
-      {
-        root: 1,
-        parts: [new Product(), ['operator', '-'], this],
-        treeClass: class extends ParseTree {
-          toString(): string {
-            return `-(${this.children[0].toString()}, ${this.children[1].toString()})`;
-          }
-          toJs(): string {
-            return `${this.children[0].toJs()} - ${this.children[1].toJs()}`;
-          }
-          type(): string {
-            return 'num';
-          }
-        },
-      },
-      {
-        root: 0,
-        parts: [new Product()],
-        invisibleNode: true,
-      },
-    ];
-  }
-}
-
-export class Product extends Rule {
-  get rules(): NewRuleType[] {
-    return [
-      {
-        root: 1,
-        parts: [this, ['operator', '*'], new Atom()],
-        treeClass: class extends ParseTree {
-          toString(): string {
-            return `*(${this.children[0].toString()}, ${this.children[1].toString()})`;
-          }
-          toJs(): string {
-            return `${this.children[0].toJs()} * ${this.children[1].toJs()}`;
-          }
-          type(): string {
-            return 'num';
-          }
-        },
-      },
-      {
-        root: 1,
-        parts: [this, ['operator', '/'], new Atom()],
-        treeClass: class extends ParseTree {
-          toString(): string {
-            return `/(${this.children[0].toString()}, ${this.children[1].toString()})`;
-          }
-          toJs(): string {
-            return `${this.children[0].toJs()} / ${this.children[1].toJs()}`;
-          }
-          type(): string {
-            return 'num';
-          }
-        },
-      },
-      {
-        root: 0,
-        parts: [new Atom()],
-        invisibleNode: true,
-      },
-    ];
-  }
-}
-
-export class Atom extends Rule {
-  get rules(): NewRuleType[] {
-    return [
-      {
-        root: 0,
-        parts: ['number'],
-        treeClass: class extends ParseTree {
-          toString(): string {
-            return this.tokenValue(0);
-          }
-          toJs(): string {
-            return this.tokenValue(0);
-          }
-          type(): string {
-            return 'num';
+            return `${this.tokenValue(0)}`;
           }
         },
       },
@@ -130,8 +35,6 @@ export class Atom extends Rule {
           }
           validate(): void {
             const varName = (this.children[0] as VariableTree).getName();
-            if (!this.varIsOfType(varName, 'num'))
-              this.addError(`variable ${varName} is not numeric`);
           }
           type(): string {
             return this.children[0].type();
@@ -140,9 +43,46 @@ export class Atom extends Rule {
       },
       {
         root: 0,
-        parts: [new TypeRequest()],
-        invisibleNode: true,
+        parts: [['operator', '!'], 'boolean'],
+        treeClass: class extends ParseTree {
+          type(): string {
+            return 'boolean';
+          }
+          toString(): string {
+            return this.toJs();
+          }
+          toJs(): string {
+            return `!${this.tokenValue(1)}`;
+          }
+        },
       },
+      ...['==', '<=', '>=', '<', '>'].map(
+        (operator) =>
+          ({
+            root: 0,
+            parts: [new Expression(), ['operator', operator], new Expression()],
+            treeClass: class extends ParseTree {
+              type(): string {
+                return 'boolean';
+              }
+              toString(): string {
+                return this.toJs();
+              }
+              toJs(): string {
+                return `${this.children[0].toJs()} ${operator} ${this.children[1].toJs()}`;
+              }
+              validate(): void {
+                if (
+                  this.getSupertype(this.children[0].type()) !=
+                  this.getSupertype(this.children[1].type())
+                )
+                  this.addError(
+                    'cannot do a boolean comparison of different types'
+                  );
+              }
+            },
+          } as NewRuleType)
+      ),
     ];
   }
 }

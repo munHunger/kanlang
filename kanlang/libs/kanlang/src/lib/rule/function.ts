@@ -100,6 +100,9 @@ export class ReturnType extends Rule {
               this.tokenValue(2),
             ]);
           }
+          validate(): void {
+            this.validateIfTypeIsDefined(this.tokenValue(2));
+          }
         },
       },
       {
@@ -108,6 +111,9 @@ export class ReturnType extends Rule {
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
             return [this.tokenValue(0)];
+          }
+          validate(): void {
+            this.validateIfTypeIsDefined(this.tokenValue(0));
           }
         },
       },
@@ -183,6 +189,7 @@ export class Argument extends Rule {
             return this.tokenValue(0);
           }
           validate(): void {
+            this.validateIfTypeIsDefined(this.type());
             this.addToScope({
               name: this.tokenValue(0),
               variable: {

@@ -1,5 +1,6 @@
 import { ParseTree } from '../parseTree';
 import { Arithmetic } from './arithmetic';
+import { BooleanRule } from './boolean';
 import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
@@ -59,7 +60,7 @@ export class Expression extends Rule {
             return `(${this.children[0].toString()} as ${this.type()})`;
           }
           validate(): void {
-            //TODO: Check if type exists
+            this.validateIfTypeIsDefined(this.type());
           }
         },
       },
@@ -70,23 +71,13 @@ export class Expression extends Rule {
       },
       {
         root: 0,
-        parts: [new TypeRequest()],
+        parts: [new BooleanRule()],
         invisibleNode: true,
       },
       {
         root: 0,
-        parts: ['boolean'],
-        treeClass: class extends ParseTree {
-          type(): string {
-            return 'boolean';
-          }
-          toString(): string {
-            return `${this.tokenValue(0)}`;
-          }
-          toJs(): string {
-            return `${this.tokenValue(0)}`;
-          }
-        },
+        parts: [new TypeRequest()],
+        invisibleNode: true,
       },
       {
         root: 0,

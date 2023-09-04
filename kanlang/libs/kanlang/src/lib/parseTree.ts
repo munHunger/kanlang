@@ -11,7 +11,7 @@ export class Transformation {
     return [...this.from, '_', ...this.to].join('_');
   }
 }
-
+const primitives = ['num', 'boolean'];
 export class TransformationTree {
   children: TransformationTree[] = [];
   constructor(
@@ -60,11 +60,11 @@ export class ParseTree {
       .map((producer) => {
         if (producer.from.length == 0) return new TransformationTree(producer);
         else {
-          const tranform = new TransformationTree(producer);
-          tranform.children = producer.from.map((arg) =>
+          const transform = new TransformationTree(producer);
+          transform.children = producer.from.map((arg) =>
             this.getTransformationPath(arg, blockVariable)
           );
-          return tranform;
+          return transform;
         }
       });
     return root;
@@ -189,6 +189,21 @@ export class ParseTree {
       .filter((part): part is Token => (part as Token).value != undefined)
       .concat(this.children.map((child) => child.allTokens).flat())
       .sort((a, b) => a.start - b.start);
+  }
+
+  validateIfTypeIsDefined(type: string) {
+    if (primitives.includes(type)) return; //Primitive types
+    const declaration = this.getDeclaration(type);
+    if (!declaration) this.addError(`${this.type()} does not exist as a type`);
+  }
+
+  getSupertype(type: string): string {
+    if (primitives.includes(type)) return type;
+    const declaration = this.getDeclaration(type);
+    if (declaration.type?.alias) {
+      return this.getSupertype(declaration.type?.alias);
+    }
+    return type;
   }
 
   addError(message: string) {

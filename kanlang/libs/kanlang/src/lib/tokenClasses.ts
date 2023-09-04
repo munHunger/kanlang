@@ -42,7 +42,7 @@ export const operator: TokenClass = {
   patterns: [
     {
       tmClass: 'keyword.operator.kanlang',
-      match: new RegExp('(\\+|==|=|!|-|\\*|/)'),
+      match: new RegExp('(\\+|==|=|<|>|<=|>=|!=|!|-|\\*|/)'),
     },
   ],
 };
