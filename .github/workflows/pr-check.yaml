@@ -49,3 +49,6 @@ jobs:
           cmd: "jq .version kanlang/package.json -r"
       - name: Show my version
         run: 'echo "version ${{ steps.version.outputs.value }}"'
+      - name: print release notes
+        id: releaseNotes
+        run: "cat releaseNotes/${{ steps.version.outputs.value }}.md"
