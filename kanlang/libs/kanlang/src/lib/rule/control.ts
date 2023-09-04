@@ -25,7 +25,7 @@ export class If extends Rule {
           validate(): void {
             if (this.children[0].type() != 'boolean') {
               this.addError(
-                'expression is not of type boolean. Recieved ' +
+                'expression is not of type boolean. Received ' +
                   this.children[0].type()
               );
             }

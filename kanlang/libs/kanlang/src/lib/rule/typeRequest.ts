@@ -56,6 +56,7 @@ export class TypeRequest extends Rule {
             }`;
           }
           validate(): void {
+            this.validateIfTypeIsDefined(this.type());
             const path = this.getTransformationPath(this.type());
             if (path.toJs().length == 0) {
               this.addError(
@@ -108,6 +109,9 @@ export class TypeRequestCatch extends Rule {
           ['punct', '}'],
         ],
         treeClass: class extends TypeRequestCatchTree {
+          validate(): void {
+            this.validateIfTypeIsDefined(this.type());
+          }
           getCatchVars(): { name: string; type: string }[] {
             return [
               {
