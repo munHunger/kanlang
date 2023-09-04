@@ -37,3 +37,14 @@ jobs:
       - name: check diff
         run: |
           git diff --name-only -r HEAD^1 HEAD | grep releaseNotes
+
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version from package.json
+        uses: sergeysova/jq-action@v2
+        id: version
+        with:
+          cmd: "jq .version kanlang/package.json -r"
+      - name: Show my version
+        run: 'echo "version ${{ steps.version.outputs.value }}"'
