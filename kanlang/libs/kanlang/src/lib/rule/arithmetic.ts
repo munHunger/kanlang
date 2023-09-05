@@ -105,6 +105,21 @@ export class Atom extends Rule {
     return [
       {
         root: 0,
+        parts: [['punct', '('], new Arithmetic(), ['punct', ')']],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `(${this.children[0].toString()})`;
+          }
+          toJs(): string {
+            return `(${this.children[0].toJs()})`;
+          }
+          type(): string {
+            return 'num';
+          }
+        },
+      },
+      {
+        root: 0,
         parts: ['number'],
         treeClass: class extends ParseTree {
           toString(): string {

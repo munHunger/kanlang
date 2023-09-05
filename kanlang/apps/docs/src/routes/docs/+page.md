@@ -201,5 +201,14 @@ So we solve this by using type aliases.
 ```kanlang
 a := "Hello" as PrefixString;
 b := "World" as SuffixString;
-c := *StringConcat as LogMsg; *LogResult;
+c := *StringConcat as LogMsg; *LogResult; //prints "HelloWorld"
+```
+
+You can also convert numbers to strings.
+
+```kanlang
+a := "Hello" as PrefixString;
+x := 42;
+b := *NumericString as SuffixString;
+c := *StringConcat as LogMsg; *LogResult; //prints "Hello42"
 ```
