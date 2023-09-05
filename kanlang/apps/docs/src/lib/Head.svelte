@@ -5,6 +5,7 @@
 </script>
 
 <svelte:head>
+	<title>Kanlang</title>
 	<meta name="description" content={tagLine} />
 
 	<!-- Twitter card -->
