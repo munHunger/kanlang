@@ -32,7 +32,7 @@ export const punct: TokenClass = {
   patterns: [
     {
       tmClass: 'support.other.kanlang',
-      match: new RegExp('(;|\\(|\\)|\\||{|}|,|:)'),
+      match: new RegExp('(;|\\(|\\)|\\||{|}|\\[|\\]|,|:)'),
     },
   ],
 };
@@ -42,7 +42,7 @@ export const operator: TokenClass = {
   patterns: [
     {
       tmClass: 'keyword.operator.kanlang',
-      match: new RegExp('(\\+|==|=|<|>|<=|>=|!=|!|-|\\*|/)'),
+      match: new RegExp('(\\+|==|=|<|>|<=|>=|!=|!|-|\\*|\\.{2,3}|/)'),
     },
   ],
 };
