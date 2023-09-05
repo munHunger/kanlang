@@ -11,7 +11,8 @@ export function testCodeGen(
   message: string,
   startingRule: Rule,
   input: string,
-  expected: string
+  expected: string,
+  withBuiltin?: boolean
 ) {
   const parser = new EarleyParser(startingRule);
   it(message + ':\n' + input, () =>
@@ -20,7 +21,8 @@ export function testCodeGen(
         .generate(
           new SemanticAnalyzer().analyze(
             parser.parse(tokenizer.tokenize(input))
-          )
+          ),
+          withBuiltin
         )
         .split('\n')
         .map((l) => l.trim())
@@ -59,6 +61,20 @@ export function testThrows(
         .analyze(parser.parse(tokenizer.tokenize(input)))
         .toString()
     ).toThrow(expectedError)
+  );
+}
+export function testNoThrows(
+  message: string,
+  startingRule: Rule,
+  input: string
+) {
+  const parser = new EarleyParser(startingRule);
+  it(message + ':' + input, () =>
+    expect(
+      new SemanticAnalyzer()
+        .analyze(parser.parse(tokenizer.tokenize(input)))
+        .toJs()
+    ).toBeDefined()
   );
 }
 //Need to have a test here (fail otherwise) and don't want this to be a "normal" file

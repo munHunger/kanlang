@@ -1,6 +1,7 @@
 import { ParseTree } from '../parseTree';
 import { Arithmetic } from './arithmetic';
 import { BooleanRule } from './boolean';
+import { StringRule } from './string';
 import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
@@ -48,6 +49,23 @@ export class Expression extends Rule {
     return [
       {
         root: 0,
+        parts: [new VariableAssignment()],
+        invisibleNode: true,
+      },
+      {
+        root: 0,
+        parts: [new ExpressionPart()],
+        invisibleNode: true,
+      },
+    ];
+  }
+}
+
+export class ExpressionPart extends Rule {
+  get rules(): NewRuleType[] {
+    return [
+      {
+        root: 0,
         parts: [this, ['keyword', 'as'], 'identifier'],
         treeClass: class extends ParseTree {
           toJs(): string {
@@ -76,12 +94,12 @@ export class Expression extends Rule {
       },
       {
         root: 0,
-        parts: [new TypeRequest()],
+        parts: [new StringRule()],
         invisibleNode: true,
       },
       {
         root: 0,
-        parts: [new VariableAssignment()],
+        parts: [new TypeRequest()],
         invisibleNode: true,
       },
     ];

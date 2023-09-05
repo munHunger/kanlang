@@ -89,6 +89,41 @@ type Kelvin alias num
     ].join('\n')
   );
 
+  testCodeGen(
+    'Can print to the console',
+    new Main(),
+    `
+  (): SysCode {
+    msg := "hello world" as LogMsg; *LogResult;
+    return true as SysCode;
+  }
+  `,
+    [
+      'function __SysCode(){',
+      'let msg = "hello world";',
+      'LogMsg___LogResult(msg);',
+      'return true;}',
+      '__SysCode();',
+    ].join('\n')
+  );
+
+  testToString(
+    'Can print to the console',
+    new Main(),
+    `
+  (): SysCode {
+    msg := "hello world" as LogMsg; *LogResult;
+    return true as SysCode;
+  }
+  `,
+    [
+      'fn (): SysCode []',
+      'msg := ("hello world" as LogMsg) [msg: LogMsg] [msg: LogMsg]',
+      'LogResult fetched from scope  [msg: LogMsg]',
+      'return (true as SysCode) [msg: LogMsg]',
+    ].join('\n')
+  );
+
   testToString(
     'can request variables',
     new Main(),

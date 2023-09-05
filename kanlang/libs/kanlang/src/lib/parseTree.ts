@@ -1,3 +1,4 @@
+import { Log } from './builtin/log';
 import { CompileError } from './compileError';
 import { State } from './earley';
 import { levenshteinDistance } from './levenstein';
@@ -13,7 +14,7 @@ export class Transformation {
     return [...this.from, '_', ...this.to].join('_');
   }
 }
-const primitives = ['num', 'boolean'];
+const primitives = ['num', 'boolean', 'string'];
 export class TransformationTree {
   children: TransformationTree[] = [];
   constructor(
@@ -40,7 +41,13 @@ export class ParseTree {
     public rule: Rule,
     private state: State,
     public parent?: ParseTree
-  ) {}
+  ) {
+    if (!parent) {
+      const builtin = new Log();
+      builtin.getTypes().forEach((type) => this.addToScope(type));
+      this.addTransformation(builtin.getTransformation());
+    }
+  }
 
   flatten(): ParseTree[] {
     return this.children.concat(
@@ -55,7 +62,9 @@ export class ParseTree {
     const varInScope = this.getAllDeclarationsInScope()
       .filter((v) => v.variable && blockVariable != v.name)
       .find((v) => v.variable.type === type);
-    if (varInScope) return new TransformationTree(undefined, varInScope);
+    if (varInScope) {
+      return new TransformationTree(undefined, varInScope);
+    }
     const root = new TransformationTree();
     root.children = this.allTransformations
       .filter((t) => t.to.includes(type))
@@ -72,15 +81,25 @@ export class ParseTree {
         return true;
       })
       .map((producer) => {
-        if (producer.from.length == 0) return new TransformationTree(producer);
-        else {
+        if (producer.from.length == 0) {
+          return new TransformationTree(producer);
+        } else {
           const transform = new TransformationTree(producer);
           transform.children = producer.from.map((arg) =>
             this.getTransformationPath(arg, blockVariable)
           );
+          if (transform.children.length != producer.from.length)
+            throw new Error('validation error. cannot find all children');
           return transform;
         }
       });
+    if (root.children.length == 0) {
+      console.log(
+        'got no children for ' + type,
+        this.getDeclaration(type),
+        this.printScope()
+      );
+    }
     return root;
   }
 
@@ -163,7 +182,7 @@ export class ParseTree {
     return `[${[
       ...new Set(
         this.getAllDeclarationsInScope()
-          .filter((d) => d.name !== 'SysCode') //Don't care about builtins
+          .filter((d) => !['SysCode', 'LogMsg', 'LogResult'].includes(d.name)) //Don't care about builtins
           .map((d) => {
             if (d.variable) return `${d.name}: ${d.variable.type}`;
             else if (d.type) return `{${d.name} is ${d.type.alias}}`;

@@ -10,6 +10,8 @@ function highlighter(code, lang) {
 
 		const typeToClass = (type) => {
 			switch (type) {
+				case 'literal':
+					return 'string';
 				case 'identifier':
 					return 'class-name';
 				case 'punct':

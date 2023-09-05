@@ -48,7 +48,7 @@ export class Function extends Rule {
               this.returnType.length == 1 &&
               this.returnType[0] == 'SysCode'
             ) {
-              var mainCall = '\n___SysCode();';
+              var mainCall = '\n__SysCode();';
             }
             return `function ${this.functionTransform.functionName}(${
               argArray?.toJs() || arg?.toJs() || ''
@@ -85,9 +85,16 @@ export class Function extends Rule {
             }
           }
           toString(): string {
-            return `fn (${this.children[0].toString()}): ${this.returnType.join(
+            const argArray =
+              this.getChildrenOfType<ArgumentParseTree>(ArgumentParseTree)[0];
+            const arg = this.getChildrenOfRuleType(Argument)[0];
+            return `fn (${
+              argArray?.toString() || arg?.toString() || ''
+            }): ${this.returnType.join(
               ' | '
-            )} ${this.printScope()}\n${this.children[2].toString()}`;
+            )} ${this.printScope()}\n${this.getChildrenOfType<BodyTree>(
+              BodyTree
+            )[0].toString()}`;
           }
         },
       },
