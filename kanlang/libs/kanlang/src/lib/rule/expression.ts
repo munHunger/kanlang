@@ -6,6 +6,7 @@ import { Function, FunctionParseTree } from './function';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
 import { VariableAssignment } from './variable';
+import { ArrayRule } from './array';
 
 export class ReturnExpressionTree extends ParseTree {
   get returnType(): string {
@@ -95,6 +96,11 @@ export class ExpressionPart extends Rule {
       {
         root: 0,
         parts: [new StringRule()],
+        invisibleNode: true,
+      },
+      {
+        root: 0,
+        parts: [new ArrayRule()],
         invisibleNode: true,
       },
       {

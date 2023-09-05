@@ -212,3 +212,35 @@ x := 42;
 b := *NumericString as SuffixString;
 c := *StringConcat as LogMsg; *LogResult; //prints "Hello42"
 ```
+
+## Arrays
+
+There is some support for arrays in kanlang.
+
+You can create them in a pretty straightforwards fashion.
+
+```kanlang
+numbers := [1, 2, 3, 4, 5, 6];
+```
+
+And you can extract data from it
+
+```kanlang
+slice := numbers[0..3]; //get sub array from index 0 inclusive, to index 3 exclusive
+direct := numbers[3]; //get value at index 3
+```
+
+Note that you cannot mix types. i.e. this is not allowed
+
+```kanlang
+arr := [1,2,"3"];
+```
+
+Aside from this you can also destruct an array in the scope of creating an array.
+A lot of words to say that you can join 2 arrays like this.
+
+```kanlang
+arr1 := [1,2,3];
+arr2 := [4,5,6];
+join := [...arr1, ...arr2];
+```
