@@ -1,10 +1,8 @@
 <script>
-	import Head from '$lib/Head.svelte';
 	import '../app.css';
 	import Version from './Version.svelte';
 </script>
 
-<Head />
 <div class="container">
 	<div class="hero">
 		<img src="favicon.png" alt="hero icon" />
