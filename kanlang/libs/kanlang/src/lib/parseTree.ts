@@ -1,8 +1,7 @@
-import { Log } from './builtin/log';
+import * as builtins from './builtin';
 import { CompileError } from './compileError';
 import { State } from './earley';
 import { levenshteinDistance } from './levenstein';
-import { Function } from './rule';
 import { Rule } from './rule/rule';
 import { Declaration } from './semantic';
 import { Token } from './tokenizer';
@@ -43,10 +42,17 @@ export class ParseTree {
     public parent?: ParseTree
   ) {
     if (!parent) {
-      const builtin = new Log();
-      builtin.getTypes().forEach((type) => this.addToScope(type));
-      this.addTransformation(builtin.getTransformation());
+      this.builtins.forEach((method) => {
+        method.getTypes().forEach((type) => this.addToScope(type));
+        this.addTransformation(method.getTransformation());
+      });
     }
+  }
+
+  get builtins(): builtins.Builtin[] {
+    return Object.values(builtins)
+      .filter((v) => v.prototype instanceof builtins.Builtin)
+      .map((c: any) => new c() as builtins.Builtin);
   }
 
   flatten(): ParseTree[] {
@@ -182,7 +188,15 @@ export class ParseTree {
     return `[${[
       ...new Set(
         this.getAllDeclarationsInScope()
-          .filter((d) => !['SysCode', 'LogMsg', 'LogResult'].includes(d.name)) //Don't care about builtins
+          .filter(
+            (d) =>
+              ![
+                'SysCode',
+                ...this.builtins
+                  .map((b) => b.getTypes().map((type) => type.name))
+                  .flat(),
+              ].includes(d.name)
+          ) //Don't care about builtins
           .map((d) => {
             if (d.variable) return `${d.name}: ${d.variable.type}`;
             else if (d.type) return `{${d.name} is ${d.type.alias}}`;

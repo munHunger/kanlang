@@ -3,6 +3,7 @@ import { Rule } from './rule/rule';
 import { SemanticAnalyzer } from './semantic';
 import { CodeGenerator } from './codeGen';
 import { Tokenizer } from './tokenizer';
+import { Main } from './rule';
 const tokenizer = new Tokenizer();
 
 const codeGenerator = new CodeGenerator();
@@ -77,6 +78,25 @@ export function testNoThrows(
     ).toBeDefined()
   );
 }
+
+export function testCodeOutput(
+  message: string,
+  input: string,
+  expected: string
+) {
+  it(message, () => {
+    const parser = new EarleyParser(new Main());
+    const code = codeGenerator.generate(
+      new SemanticAnalyzer().analyze(parser.parse(tokenizer.tokenize(input))),
+      true
+    );
+    console.log = jest.fn();
+
+    eval(code);
+    expect((console.log as any).mock.calls[0][0]).toBe(expected);
+  });
+}
+
 //Need to have a test here (fail otherwise) and don't want this to be a "normal" file
 describe('dummy', () => {
   it('1+1', () => expect(true).toBeTruthy());
