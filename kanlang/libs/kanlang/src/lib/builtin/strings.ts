@@ -39,3 +39,26 @@ export class StringConcat extends Builtin {
     }(a, b) { return a + b }`;
   }
 }
+
+export class NumToString extends Builtin {
+  getTypes(): Declaration[] {
+    return [
+      {
+        name: 'NumericString',
+        type: {
+          alias: 'string',
+        },
+      },
+    ];
+  }
+
+  getTransformation(): Transformation {
+    return new Transformation(['num'], ['NumericString']);
+  }
+
+  getImpl(): string {
+    return `function ${
+      this.getTransformation().functionName
+    }(i) { return "" + i }`;
+  }
+}
