@@ -2,31 +2,40 @@ import { Transformation } from '../parseTree';
 import { Declaration } from '../semantic';
 import { Builtin } from './builtin';
 
-export class Log extends Builtin {
+export class StringConcat extends Builtin {
   getTypes(): Declaration[] {
     return [
       {
-        name: 'LogMsg',
+        name: 'PrefixString',
         type: {
           alias: 'string',
         },
       },
       {
-        name: 'LogResult',
+        name: 'SuffixString',
         type: {
-          alias: 'num',
+          alias: 'string',
+        },
+      },
+      {
+        name: 'StringConcat',
+        type: {
+          alias: 'string',
         },
       },
     ];
   }
 
   getTransformation(): Transformation {
-    return new Transformation(['LogMsg'], ['LogResult']);
+    return new Transformation(
+      ['PrefixString', 'SuffixString'],
+      ['StringConcat']
+    );
   }
 
   getImpl(): string {
     return `function ${
       this.getTransformation().functionName
-    }(msg) { console.log(msg); }`;
+    }(a, b) { return a + b }`;
   }
 }

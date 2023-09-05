@@ -182,3 +182,24 @@ So here is a minimal `Hello World` written in kanlang
 	return true as SysCode;
 }
 ```
+
+## Working with strings
+
+Lets say you have two strings
+
+```kanlang
+a := "Hello";
+b := "World";
+```
+
+And you want to join them.
+The language becomes a bit odd here, because there are no functions on strings.
+And if we were to create a transformer it would take two of the same argument `a: string, b: string`, which would confuse the compiler in terms of what is prefix and what is suffix.
+
+So we solve this by using type aliases.
+
+```kanlang
+a := "Hello" as PrefixString;
+b := "World" as SuffixString;
+c := *StringConcat as LogMsg; *LogResult;
+```
