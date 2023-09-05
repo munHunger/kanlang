@@ -1,5 +1,5 @@
 <script>
-	import Version from './Version.svelte'
+	import Version from '../Version.svelte'
 </script>
 
 # Kanlang
@@ -163,10 +163,22 @@ This is done by creating the `main` rule.
 
 ```kanlang
 (): SysCode {
-
+	return true as SysCode;
 }
 ```
 
 `SysCode` is an alias for `boolean` and should indicate if the program terminated correctly or not.
 
 This rule will be the starting point of your program.
+
+## Logging
+
+Running the code in itself might not be of any value unless you can see the result of it.
+So here is a minimal `Hello World` written in kanlang
+
+```kanlang
+(): SysCode {
+	msg := "hello world" as LogMsg; *LogResult;
+	return true as SysCode;
+}
+```
