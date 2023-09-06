@@ -1,5 +1,5 @@
 import { ParseTree } from '../parseTree';
-import { If } from './control';
+import { For, If } from './control';
 import { Expression, Return } from './expression';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest, TypeRequestTree } from './typeRequest';
@@ -41,6 +41,11 @@ export class Body extends Rule {
       {
         root: 0,
         parts: [new If(), this],
+        treeClass: class extends BodyTree {},
+      },
+      {
+        root: 0,
+        parts: [new For(), this],
         treeClass: class extends BodyTree {},
       },
       {

@@ -48,11 +48,14 @@ export class SemanticAnalyzer {
 
     state.tree
       .filter((child) => !this.childIsToken(child))
-      .map((child) => {
-        return this.analyze(child as State, tree);
-      })
-      .filter((v) => v) //removes epsilon
-      .forEach((child) => tree.addChild(child));
+      .forEach((child) => {
+        const c = this.analyze(child as State, tree);
+        if (c) {
+          //removes epsilon
+          tree.addChild(c);
+          tree.postChildAdded();
+        }
+      });
 
     tree.validate();
     if (ParseTree.errors.length > 0) {

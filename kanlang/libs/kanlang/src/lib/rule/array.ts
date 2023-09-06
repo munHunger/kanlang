@@ -40,7 +40,7 @@ export class ArrayRule extends Rule {
                 return `${this.children[0].toString()}[${this.children[1].toString()}..${this.children[1].toString()}]`;
               }
               validate(): void {
-                if (!this.children[0].type().match(/^\[.+\]$/)) {
+                if (!this.isArrayType(this.children[0].type())) {
                   this.addError(`expression is not an array`);
                 }
                 if (
@@ -66,7 +66,7 @@ export class ArrayRule extends Rule {
                 return `${this.children[0].toString()}[${this.children[1].toString()}]`;
               }
               validate(): void {
-                if (!this.children[0].type().match(/^\[.+\]$/)) {
+                if (!this.isArrayType(this.children[0].type())) {
                   this.addError(`expression is not an array`);
                 }
                 if (this.children[1].type() != 'num') {
@@ -103,12 +103,12 @@ export class ArrayData extends Rule {
             return `destruct ${this.children[0].toString()}`;
           }
           validate(): void {
-            if (!this.children[0].type().match(/^\[.+\]$/)) {
+            if (!this.isArrayType(this.children[0].type())) {
               this.addError(`expression is not an array`);
             }
           }
           type(): string {
-            return this.children[0].type().slice(1, -1);
+            return this.unNestArrayType(this.children[0].type());
           }
         },
       },

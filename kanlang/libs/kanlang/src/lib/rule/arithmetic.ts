@@ -146,7 +146,9 @@ export class Atom extends Rule {
           validate(): void {
             const varName = (this.children[0] as VariableTree).getName();
             const declaration = this.getDeclaration(varName);
-            if (
+            if (!declaration) {
+              this.addError(`variable ${varName} is not defined`);
+            } else if (
               !this.varIsOfType(varName, 'num') &&
               this.getSupertype(declaration.variable.type) != 'num'
             )
