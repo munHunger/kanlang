@@ -12,7 +12,6 @@ export class Function extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [
           ['punct', '('],
           new ArgumentArray(),
@@ -111,7 +110,6 @@ export class ReturnType extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [this, ['punct', '|'], new InlineType()],
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
@@ -129,7 +127,6 @@ export class ReturnType extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new InlineType()],
         treeClass: class extends ReturnTypeParseTree {
           get types(): string[] {
@@ -157,7 +154,6 @@ export class ArgumentArray extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [this, ['punct', ','], new Argument()],
         treeClass: class extends ArgumentParseTree {
           get types(): string[] {
@@ -182,12 +178,10 @@ export class ArgumentArray extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Argument()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [], //epsilon rule
         treeClass: class extends ParseTree {
           toString(): string {
@@ -203,7 +197,6 @@ export class Argument extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: ['identifier', ['punct', ':'], new InlineType()],
         treeClass: class extends ParseTree {
           type(): string {

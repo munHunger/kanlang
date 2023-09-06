@@ -7,7 +7,6 @@ export class If extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [
           ['keyword', 'if'],
           new Expression(),
@@ -40,7 +39,6 @@ export class For extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [
           ['keyword', 'for'],
           'identifier',

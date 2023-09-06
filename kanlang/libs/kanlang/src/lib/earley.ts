@@ -10,7 +10,7 @@ export type State = NewRuleType & {
 export class EarleyParser {
   constructor(private startingRule: Rule) {}
 
-  parse(tokens: Token[]): State & { toAstString: () => string } {
+  parse(tokens: Token[]): State {
     tokens = tokens.filter(
       (token) => token.type !== 'whitespace' && token.type !== 'comment'
     );
@@ -79,7 +79,6 @@ export class EarleyParser {
     if (parseOrder.length > 0)
       return {
         ...parseOrder[0],
-        toAstString: () => this.toAstString(parseOrder[0]),
       };
 
     this.reportError(stateSets, tokens);
@@ -145,7 +144,7 @@ export class EarleyParser {
     return object.ruleRef != null;
   }
   private treeToString(state: State): string {
-    const name = state.ruleRef.ruleName + state.root;
+    const name = state.ruleRef.ruleName;
     const rules = state.tree
       .map((part) =>
         this.isState(part) ? this.treeToString(part) : `'${part.value}'`
@@ -153,19 +152,6 @@ export class EarleyParser {
       .join(', ');
 
     return `${name}(${rules})`;
-  }
-
-  private toAstString(state: State): string {
-    const rules = state.tree.map((part) =>
-      this.isState(part) ? this.toAstString(part) : `${part.value}`
-    );
-
-    if (rules.length > 1)
-      return `${rules[state.root]}(${rules
-        .slice(0, state.root)
-        .concat(rules.slice(state.root + 1))
-        .join(', ')})`;
-    return `${rules[state.root]}`;
   }
 
   private isEqual(a: State, b: State): boolean {

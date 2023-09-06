@@ -5,7 +5,6 @@ export class InlineType extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: ['identifier'],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -23,7 +22,6 @@ export class InlineType extends Rule {
         },
       },
       {
-        root: 0,
         parts: ['identifier', ['keyword', 'alias'], 'identifier'],
         treeClass: class extends ParseTree {
           toString(): string {

@@ -2,7 +2,7 @@ import { ParseTree } from '../parseTree';
 import { For, If } from './control';
 import { Expression, Return } from './expression';
 import { NewRuleType, Rule } from './rule';
-import { TypeRequest, TypeRequestTree } from './typeRequest';
+import { TypeRequestTree } from './typeRequest';
 
 export class BodyTree extends ParseTree {
   toJs(): string {
@@ -12,8 +12,10 @@ export class BodyTree extends ParseTree {
     return `${this.children[0].toString()} ${this.printScope()}${this.childString()}`;
   }
   hoist(): string {
-    const typeRequests =
-      this.getChildrenOfType<TypeRequestTree>(TypeRequestTree);
+    const typeRequests = this.getChildrenOfType<TypeRequestTree>(
+      TypeRequestTree,
+      BodyTree
+    );
     if (typeRequests.length > 0)
       return `\n${typeRequests.map((v) => v.getHoistJs()).join('')}\n`;
     return '';
@@ -34,27 +36,22 @@ export class Body extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [new Expression(), ['punct', ';'], this],
         treeClass: class extends BodyTree {},
       },
       {
-        root: 0,
         parts: [new If(), this],
         treeClass: class extends BodyTree {},
       },
       {
-        root: 0,
         parts: [new For(), this],
         treeClass: class extends BodyTree {},
       },
       {
-        root: 0,
         parts: [new Return(), ['punct', ';'], this],
         treeClass: class extends BodyTree {},
       },
       {
-        root: 0,
         parts: [],
         invisibleNode: true,
       },

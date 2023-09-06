@@ -7,7 +7,6 @@ export class Main extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [new Function(), this],
         treeClass: class extends ParseTree {
           toJs(): string {
@@ -22,7 +21,6 @@ export class Main extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new TypeDef(), this],
         treeClass: class extends ParseTree {
           toJs(): string {
@@ -37,12 +35,10 @@ export class Main extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Function()], //TODO: a bit weird that you have to end like this. Would be better if epsilon worked
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new TypeDef()], //TODO: a bit weird that you have to end like this. Would be better if epsilon worked
         invisibleNode: true,
       },

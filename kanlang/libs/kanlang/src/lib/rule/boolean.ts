@@ -1,15 +1,12 @@
 import { ParseTree } from '../parseTree';
-import { operator } from '../tokenClasses';
 import { Expression } from './expression';
 import { NewRuleType, Rule } from './rule';
-import { TypeRequest } from './typeRequest';
 import { Variable, VariableTree } from './variable';
 
 export class BooleanRule extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: ['boolean'],
         treeClass: class extends ParseTree {
           type(): string {
@@ -24,7 +21,6 @@ export class BooleanRule extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Variable()],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -42,7 +38,6 @@ export class BooleanRule extends Rule {
         },
       },
       {
-        root: 0,
         parts: [['operator', '!'], 'boolean'],
         treeClass: class extends ParseTree {
           type(): string {
@@ -59,7 +54,6 @@ export class BooleanRule extends Rule {
       ...['==', '<=', '>=', '<', '>'].map(
         (operator) =>
           ({
-            root: 0,
             parts: [new Expression(), ['operator', operator], new Expression()],
             treeClass: class extends ParseTree {
               type(): string {

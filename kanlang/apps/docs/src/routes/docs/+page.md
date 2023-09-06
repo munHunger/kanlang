@@ -156,6 +156,31 @@ Note that in current version only num and boolean exists as primitive types.
 And there is no way to create complex types
 ```
 
+## Explicit type conversion
+
+There can be scenarios where you happen to have two values of the same type in your scope, and you request a variable requiring one variable of that type.
+
+This scenario should generally be avoided, or if you end up in such a scenario you should aim to alias your types to provide additional information.
+
+For example in the temperature case, it might be relevant to do something like this.
+
+```kanlang
+type Celsius alias num
+type NonFreezingCelsius alias Celsius
+```
+
+both types will behave the same, but the type add a layer of metadata that distinguish them from each other.
+
+However you can end up in the scenario where you want the transformation of multiple variables.
+In which case you can explicitly ask for a variable to be converted using the `to` keyword.
+
+```kanlang
+a := 0 as Celsius;
+b := 32 as Celsius;
+x := a to Kelvin;
+y := b to Kelvin;
+```
+
 ## Running the code
 
 After creating all rules you need a way to start the transformation.

@@ -29,6 +29,40 @@ export class TransformationTree {
     }
     return this.children.map((child) => child.toJs()).flat();
   }
+  //Shamelessly stolen: https://stackoverflow.com/questions/53311809/all-possible-combinations-of-a-2d-array-in-javascript
+  combos(list, n = 0, result = [], current = []) {
+    if (n === list.length) result.push(current);
+    else
+      list[n].forEach((item) =>
+        this.combos(list, n + 1, result, [...current, item])
+      );
+
+    return result;
+  }
+
+  filterIncludeVariable(declaration: Declaration): TransformationTree {
+    if (this.declaration) {
+      if (this.declaration.name != declaration.name) {
+        return undefined; //I have honestly no idea why this works, but seems like it does
+      }
+    }
+    if (this.transformation) {
+    }
+    this.children = this.children.filter((child) =>
+      child.filterIncludeVariable(declaration)
+    );
+    return this;
+  }
+  toJs2(): string[] {
+    if (this.declaration) return [this.declaration.name];
+    if (this.transformation) {
+      const children = this.children.map((child) => child.toJs2());
+      return this.combos(children).map(
+        (args) => this.transformation.functionName + `(${args.join(', ')})`
+      );
+    }
+    return this.children.map((child) => child.toJs2()).flat();
+  }
 }
 
 export class ParseTree {
@@ -67,6 +101,49 @@ export class ParseTree {
 
   unNestArrayType(type: string): string {
     return type.slice(1, -1);
+  }
+
+  getTransformationPaths(
+    type: string,
+    blockVariable?: string
+  ): TransformationTree {
+    const tree = new TransformationTree();
+    tree.children = tree.children.concat(
+      this.getAllDeclarationsInScope()
+        .filter((v) => v.variable && blockVariable != v.name)
+        .filter((v) => v.variable.type === type)
+        .map((v) => new TransformationTree(undefined, v))
+    );
+    tree.children = tree.children.concat(
+      this.allTransformations
+        .filter((t) => t.to.includes(type))
+        .filter((t) => {
+          const fn = this.getParentOfTypeString('Function') as any;
+          if (fn) {
+            try {
+              if (fn.functionTransform.functionName == t.functionName)
+                return false; //Blocks recursion
+            } catch (e) {
+              //Do nothing, hacky, but likely in wrong compiler stage
+            }
+          }
+          return true;
+        })
+        .map((producer) => {
+          if (producer.from.length == 0) {
+            return new TransformationTree(producer);
+          } else {
+            const transform = new TransformationTree(producer);
+            transform.children = producer.from.map((arg) =>
+              this.getTransformationPaths(arg, blockVariable)
+            );
+            if (transform.children.length != producer.from.length)
+              throw new Error('validation error. cannot find all children');
+            return transform;
+          }
+        })
+    );
+    return tree;
   }
 
   getTransformationPath(
@@ -175,10 +252,20 @@ export class ParseTree {
     return this.children.filter((child) => child.rule instanceof c);
   }
 
-  getChildrenOfType<T extends ParseTree>(c: typeof ParseTree): T[] {
+  getChildrenOfType<T extends ParseTree>(
+    c: typeof ParseTree,
+    stoppingRule?: typeof ParseTree
+  ): T[] {
     return this.children
       .filter((child) => child instanceof c)
-      .concat(this.children.map((child) => child.getChildrenOfType(c)).flat())
+      .concat(
+        this.children
+          .filter(
+            (c) => stoppingRule == undefined || !(c instanceof stoppingRule)
+          )
+          .map((child) => child.getChildrenOfType(c))
+          .flat()
+      )
       .map((child) => child as T);
   }
 

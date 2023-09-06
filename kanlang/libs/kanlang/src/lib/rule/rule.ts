@@ -3,7 +3,6 @@ import { TokenType } from '../tokenizer';
 
 export type RuleType = Array<TokenType | [TokenType, string] | Rule>;
 export type NewRuleType = {
-  root: number;
   parts: RuleType;
   invisibleNode?: boolean;
   treeClass?: typeof ParseTree;

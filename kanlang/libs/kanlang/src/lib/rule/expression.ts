@@ -18,7 +18,6 @@ export class Return extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [['keyword', 'return'], new Expression()],
         treeClass: class extends ReturnExpressionTree {
           get returnType(): string {
@@ -49,12 +48,10 @@ export class Expression extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [new VariableAssignment()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new ExpressionPart()],
         invisibleNode: true,
       },
@@ -66,7 +63,6 @@ export class ExpressionPart extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [this, ['keyword', 'as'], 'identifier'],
         treeClass: class extends ParseTree {
           toJs(): string {
@@ -84,27 +80,22 @@ export class ExpressionPart extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Arithmetic()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new BooleanRule()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new StringRule()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new ArrayRule()],
         invisibleNode: true,
       },
       {
-        root: 0,
         parts: [new TypeRequest()],
         invisibleNode: true,
       },
