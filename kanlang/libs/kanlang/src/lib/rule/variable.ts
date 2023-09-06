@@ -35,6 +35,28 @@ export class VariableAssignment extends Rule {
           }
         },
       },
+      {
+        root: 0,
+        parts: [new Variable(), ['operator', '='], new Expression()],
+        treeClass: class extends VariableTree {
+          getName(): string {
+            return (this.children[0] as VariableTree).getName();
+          }
+          toJs(): string {
+            return `${this.getName()} = ${this.children[1].toJs()}`;
+          }
+          toString(): string {
+            return `${this.getName()} = ${this.children[1].toString()} ${this.printScope()}`;
+          }
+          validate(): void {
+            if (this.children[0].type() != this.children[1].type()) {
+              this.addError(
+                `cannot change variable type, from ${this.children[0].type()} to ${this.children[1].type()}`
+              );
+            }
+          }
+        },
+      },
     ];
   }
 }

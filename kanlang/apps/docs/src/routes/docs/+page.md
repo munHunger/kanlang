@@ -244,3 +244,12 @@ arr1 := [1,2,3];
 arr2 := [4,5,6];
 join := [...arr1, ...arr2];
 ```
+
+An array can be iterated over like this
+
+```kanlang
+sum := 0;
+for i in [1,2,3,4,5] {
+	sum = sum + i;
+}
+```

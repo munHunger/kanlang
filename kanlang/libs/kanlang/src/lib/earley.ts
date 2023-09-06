@@ -31,8 +31,10 @@ export class EarleyParser {
       })
     );
     for (let k = 0; k < stateSets.length; k++) {
-      for (let n = 0; n < stateSets[k].length; n++) {
+      let n = 0;
+      while (n < stateSets[k].length) {
         const state = stateSets[k][n];
+        n++;
         if (this.isComplete(state)) {
           //finished state
           const completions = this.complete(state, stateSets);
@@ -43,11 +45,13 @@ export class EarleyParser {
                 !stateSets[k].find((set) => this.isEqual(set, newState))
             )
             .forEach((newState) => stateSets[k].push(newState));
-        } else if (k < stateSets.length - 1) {
+        } else {
           if (this.isTerminalToken(this.nextElementInState(state))) {
             //terminal
-            const scanned = this.scan(state, k, tokens);
-            if (scanned) stateSets[k + 1].push(scanned);
+            if (k < stateSets.length - 1) {
+              const scanned = this.scan(state, k, tokens);
+              if (scanned) stateSets[k + 1].push(scanned);
+            }
           } else {
             //non terminal
             const predictions = this.predict(state, k);
@@ -67,10 +71,11 @@ export class EarleyParser {
       (v) => v.position.rule === v.parts.length && v.position.origin == 0
     );
     const parsableWays = parseOrder.length;
-    if (parsableWays > 1)
-      console.log(
-        `\x1b[33m[WARN]\x1b[0m grammar is ambigous and could parse input in \x1b[36m${parsableWays}\x1b[0m different ways`
-      );
+    // TODO: this is removed as the ambiguity isn't properly solved. Check invisible rules (rules that just redirect)
+    // if (parsableWays > 1)
+    //   console.log(
+    //     `\x1b[33m[WARN]\x1b[0m grammar is ambigous and could parse input in \x1b[36m${parsableWays}\x1b[0m different ways`
+    //   );
     if (parseOrder.length > 0)
       return {
         ...parseOrder[0],
@@ -105,14 +110,24 @@ export class EarleyParser {
         const expectedTokens = `\n  Expected one of:\n${[...expectedNext]
           .map((expected) => '    ' + expected)
           .join('\n')}`;
-        if (k == tokens.length)
+        if (k == tokens.length) {
+          const printed = this.printStateSets(stateSets);
+          // for (let i = 0; i < printed.length; i++) {
+          //   console.log(
+          //     `\x1b[33m${tokens[i]?.type}:${
+          //       tokens[i]?.value
+          //     }\x1b[36m(${i})\x1b[0m\n--------------------------\n${printed[
+          //       i
+          //     ].join('\n')}`
+          //   );
+          // }
           throw new CompileError(
             tokens[k - 1],
             `Syntax error.\n  Missing token after ${
               tokens[k - 1].value
             }.${expectedTokens}`
           );
-        else
+        } else
           throw new CompileError(
             tokens[k],
             `Syntax error.\n  Unexpected token "${tokens[k].value}".${expectedTokens}`
@@ -176,7 +191,9 @@ export class EarleyParser {
     return stateSets.map((stack) =>
       stack.map(
         (state) =>
-          `${stateName(state)} -> ${state.parts
+          `${this.isComplete(state) ? '\x1b[32m' : '\x1b[31m'}${stateName(
+            state
+          )}\x1b[0m -> ${state.parts
             .map(
               (r, i) =>
                 (state.position.rule == i ? '•' : '') +

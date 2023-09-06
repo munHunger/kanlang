@@ -61,6 +61,14 @@ export class ParseTree {
     );
   }
 
+  isArrayType(type: string): boolean {
+    return /^\[.+\]$/.test(type);
+  }
+
+  unNestArrayType(type: string): string {
+    return type.slice(1, -1);
+  }
+
   getTransformationPath(
     type: string,
     blockVariable?: string
@@ -234,6 +242,12 @@ export class ParseTree {
    * To be called before validation and before drilling down to children
    */
   preValidate() {
+    //Left empty, to be implemented further down
+  }
+  /**
+   * To be called after each added child
+   */
+  postChildAdded() {
     //Left empty, to be implemented further down
   }
 
