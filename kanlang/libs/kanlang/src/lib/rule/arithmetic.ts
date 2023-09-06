@@ -1,4 +1,3 @@
-import { levenshteinDistance } from '../levenstein';
 import { ParseTree } from '../parseTree';
 import { NewRuleType, Rule } from './rule';
 import { TypeRequest } from './typeRequest';
@@ -8,7 +7,6 @@ export class Arithmetic extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [new Sum()],
         invisibleNode: true,
       },
@@ -20,7 +18,6 @@ export class Sum extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 1,
         parts: [new Product(), ['operator', '+'], this],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -35,7 +32,6 @@ export class Sum extends Rule {
         },
       },
       {
-        root: 1,
         parts: [new Product(), ['operator', '-'], this],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -50,7 +46,6 @@ export class Sum extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Product()],
         invisibleNode: true,
       },
@@ -62,7 +57,6 @@ export class Product extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 1,
         parts: [this, ['operator', '*'], new Atom()],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -77,7 +71,6 @@ export class Product extends Rule {
         },
       },
       {
-        root: 1,
         parts: [this, ['operator', '/'], new Atom()],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -92,7 +85,6 @@ export class Product extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Atom()],
         invisibleNode: true,
       },
@@ -104,7 +96,6 @@ export class Atom extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [['punct', '('], new Arithmetic(), ['punct', ')']],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -119,7 +110,6 @@ export class Atom extends Rule {
         },
       },
       {
-        root: 0,
         parts: ['number'],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -134,7 +124,6 @@ export class Atom extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Variable()],
         treeClass: class extends ParseTree {
           toString(): string {
@@ -168,7 +157,6 @@ export class Atom extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new TypeRequest()],
         invisibleNode: true,
       },

@@ -6,7 +6,6 @@ export class ArrayRule extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 1,
         parts: [['punct', '['], new ArrayData(), ['punct', ']']], //creation
         treeClass: class extends ParseTree {
           toString(): string {
@@ -23,7 +22,6 @@ export class ArrayRule extends Rule {
       ...([this, new Expression()]
         .map((arr) => [
           {
-            root: 1,
             parts: [
               arr,
               ['punct', '['],
@@ -56,7 +54,6 @@ export class ArrayRule extends Rule {
             },
           },
           {
-            root: 1,
             parts: [arr, ['punct', '['], new Expression(), ['punct', ']']],
             treeClass: class extends ParseTree {
               toJs(): string {
@@ -87,13 +84,11 @@ export class ArrayData extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [new Expression()],
         invisibleNode: true,
       },
 
       {
-        root: 1,
         parts: [['operator', '...'], new Expression()], //destruct
         treeClass: class extends ParseTree {
           toJs(): string {
@@ -113,7 +108,6 @@ export class ArrayData extends Rule {
         },
       },
       {
-        root: 0,
         parts: [this, ['punct', ','], this],
         treeClass: class extends ParseTree {
           toString(): string {

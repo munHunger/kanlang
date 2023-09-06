@@ -5,7 +5,6 @@ export class TypeDef extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [
           ['keyword', 'type'],
           'identifier',

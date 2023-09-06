@@ -5,7 +5,6 @@ export class StringRule extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: ['literal'],
         treeClass: class extends ParseTree {
           type(): string {

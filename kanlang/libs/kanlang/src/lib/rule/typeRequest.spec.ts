@@ -124,6 +124,82 @@ type Kelvin alias num
     ].join('\n')
   );
 
+  testThrows(
+    'throws errors when there is no path to transform',
+    new Main(),
+    `
+    type Celsius alias num
+    type Kelvin alias num
+    
+    (): Kelvin {
+      a := 0 as Celsius;
+      x := a to Kelvin;
+      return 0 as Kelvin;
+    }
+  `,
+    /.*no possible path.*Kelvin.*/
+  );
+  testCodeGen(
+    'Can explicitly ask for type conversion (js)',
+    new Main(),
+    `
+    type Celsius alias num
+    type Kelvin alias num
+    (c: Celsius): Kelvin {
+      return c + 1 as Kelvin;
+    }
+    (): Kelvin {
+      a := 0 as Celsius;
+      b := 0 as Celsius;
+      c := 0 as Kelvin;
+      x := a to Kelvin;
+      y := b to Kelvin;
+      z := 64 as Celsius to Kelvin;
+      return 0 as Kelvin;
+    }
+  `,
+    [
+      'function Celsius___Kelvin(c){',
+      'return c + 1;}',
+      'function __Kelvin(){',
+      'let a = 0;',
+      'let b = 0;',
+      'let c = 0;',
+      'let x = Celsius___Kelvin(a);',
+      'let y = Celsius___Kelvin(b);',
+      'let _Celsius_Kelvin = 64;',
+      'let z = Celsius___Kelvin(_Celsius_Kelvin);',
+      'return 0;}',
+    ].join('\n')
+  );
+
+  testToString(
+    'Can explicitly ask for type conversion',
+    new Main(),
+    `
+    type Celsius alias num
+    type Kelvin alias num
+    (c: Celsius): Kelvin {
+      return c + 1 as Kelvin;
+    }
+    (): Kelvin {
+      a := 0 as Celsius;
+      x := a to Kelvin;
+      return 0 as Kelvin;
+    }
+  `,
+    [
+      '{Celsius is num}',
+      '{Kelvin is num}',
+      'fn (c: Celsius): Kelvin [{Celsius is num}, {Kelvin is num}, c: Celsius]',
+      'return (+(<c>, 1) as Kelvin) [{Celsius is num}, {Kelvin is num}, c: Celsius]',
+      'fn (): Kelvin [{Celsius is num}, {Kelvin is num}]',
+      'a := (0 as Celsius) [{Celsius is num}, {Kelvin is num}, a: Celsius] [{Celsius is num}, {Kelvin is num}, a: Celsius]', //scope gets double printed but it is "fine"
+      'x := <a> transformed to Kelvin  [{Celsius is num}, {Kelvin is num}, a: Celsius, x: Kelvin] [{Celsius is num}, {Kelvin is num}, a: Celsius, x: Kelvin]',
+      'return (0 as Kelvin) [{Celsius is num}, {Kelvin is num}, a: Celsius, x: Kelvin]',
+    ].join('\n')
+  );
+
   testToString(
     'can request variables',
     new Main(),
@@ -133,7 +209,7 @@ type Fahrenheit alias num
 type Kelvin alias num
 
 (f: Fahrenheit): Celsius {
-  return f - 32 * 5 / 9 as Celsius; //TODO: should have parenthesis
+  return f - 32 * 5 / 9 as Celsius;
 }
 (c: Celsius): Kelvin {
   return c - 273 as Kelvin;

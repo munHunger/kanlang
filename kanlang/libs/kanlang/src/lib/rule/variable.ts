@@ -7,7 +7,6 @@ export class VariableAssignment extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: [
           'identifier',
           ['punct', ':'],
@@ -36,7 +35,6 @@ export class VariableAssignment extends Rule {
         },
       },
       {
-        root: 0,
         parts: [new Variable(), ['operator', '='], new Expression()],
         treeClass: class extends VariableTree {
           getName(): string {
@@ -61,15 +59,16 @@ export class VariableAssignment extends Rule {
   }
 }
 
-export abstract class VariableTree extends ParseTree {
-  abstract getName(): string;
+export class VariableTree extends ParseTree {
+  getName(): string {
+    throw new Error('need to impl getName');
+  }
 }
 
 export class Variable extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
-        root: 0,
         parts: ['identifier'],
         treeClass: class extends VariableTree {
           toString(): string {
