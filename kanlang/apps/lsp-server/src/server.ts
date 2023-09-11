@@ -20,8 +20,7 @@ import {
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { TokenizerError, compile } from '@kanlang/kanlang';
-import { CompileError } from 'libs/kanlang/src/lib/compileError';
-import { SemanticState } from 'libs/kanlang/src/lib/semantic';
+import { CompileError, CompileErrors } from 'libs/kanlang/src/lib/compileError';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -95,6 +94,25 @@ export async function validateTextDocument(
         source: 'kanlang parser',
       };
       diagnostics.push(diagnostic);
+    } else if (e instanceof CompileErrors) {
+      e.errors.forEach((e) => {
+        const diagnostic: Diagnostic = {
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {
+              line: e.lineNumber,
+              character: e.charIndex,
+            },
+            end: {
+              line: e.lineNumber,
+              character: e.charIndex + e.length,
+            },
+          },
+          message: e.message,
+          source: 'kanlang parser',
+        };
+        diagnostics.push(diagnostic);
+      });
     }
   }
   // Send the computed diagnostics to VSCode.
@@ -227,13 +245,21 @@ connection.onHover((hover) => {
       (token) =>
         token.position.line == hover.position.line &&
         hover.position.character >= token.position.character &&
-        hover.position.character <=
-          token.position.character + token.value.length
+        hover.position.character < token.position.character + token.value.length
     );
+    if (!hoveredToken) {
+      connection.console.log(
+        `could compile code but could not find token at (${hover.position.line}: ${hover.position.character})`
+      );
+    }
     if (hoveredToken && hoveredToken.type == 'identifier') {
-      const scope = state.sem.scope; //TODO: this should be a recursive search
-      if (state.sem.scope) {
-        if (scope[hoveredToken.value]) {
+      const tree = state.sem.getChildStartingOnToken(hoveredToken);
+      const declaration = tree.getDeclaration(hoveredToken.value);
+      connection.console.log(
+        `got a declaration ${JSON.stringify(declaration, null, 2)}`
+      );
+      if (declaration) {
+        if (declaration.variable) {
           return {
             contents: {
               kind: MarkupKind.Markdown,
@@ -241,11 +267,25 @@ connection.onHover((hover) => {
                 '```typescript\nlet ' +
                 hoveredToken.value +
                 ': ' +
-                scope[hoveredToken.value].variable.type +
+                declaration.variable.type +
+                '\n```',
+            },
+          };
+        } else {
+          return {
+            contents: {
+              kind: MarkupKind.Markdown,
+              value:
+                '```\n ' +
+                hoveredToken.value +
+                ': ' +
+                declaration.type.alias + //alias is the only thing supported at the moment
                 '\n```',
             },
           };
         }
+      } else {
+        connection.console.log('could not find any declaration');
       }
     }
   } catch (e) {
@@ -298,3 +338,4 @@ documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+connection.console.log('Kanlang LSP up and running');

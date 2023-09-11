@@ -1,4 +1,4 @@
-import { testToString } from '../testHelper.spec';
+import { testThrows, testToString } from '../testHelper.spec';
 import { Main } from './main';
 import { TypeDef } from './typeDef';
 
@@ -18,5 +18,11 @@ describe('TypeDef', () => {
       'fn (a: Unit): num [{Unit is num}, a: Unit]',
       'return +(<a>, 1) [{Unit is num}, a: Unit]',
     ].join('\n')
+  );
+  testThrows(
+    'throws when aliasing non existing types',
+    new TypeDef(),
+    'type A alias B',
+    /.*'B' does not exist as a type'*/
   );
 });

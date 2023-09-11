@@ -72,7 +72,7 @@ export class ParseTree {
   transformation: Transformation[] = [];
   constructor(
     public rule: Rule,
-    private state: State,
+    public state: State,
     public parent?: ParseTree
   ) {
     if (!parent) {
@@ -349,6 +349,16 @@ export class ParseTree {
       .sort((a, b) => a.start - b.start);
   }
 
+  getChildStartingOnToken(token: Token): ParseTree {
+    const firstToken = this.state.tree[0];
+    if ((firstToken as Token).value != undefined && this.children.length == 0) {
+      if ((firstToken as Token).start == token.start) return this;
+    }
+    return this.children
+      .map((c) => c.getChildStartingOnToken(token))
+      .filter((v) => v)[0];
+  }
+
   validateIfTypeIsDefined(type: string) {
     if (primitives.includes(type)) return; //Primitive types
     const declaration = this.getDeclaration(type);
@@ -369,7 +379,7 @@ export class ParseTree {
         )
         .slice(0, 3);
       this.addError(
-        `'${this.type()}' does not exist as a type.\nDid you mean any of (${close.join(
+        `'${type}' does not exist as a type.\nDid you mean any of (${close.join(
           ', '
         )}) \nPossible types are: \n    ${allDeclarations.join('\n    ')}`
       );

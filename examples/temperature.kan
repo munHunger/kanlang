@@ -1,17 +1,21 @@
 type Celsius alias num
 type Fahrenheit alias num
 type Kelvin alias num
+type Error alias string
 
 (f: Fahrenheit): Celsius {
   return f - 32 * 5 / 9 as Celsius; 
 }
 (c: Celsius): Kelvin | Error {
+  if c < -273 {
+    return "can't go that low" as Error;
+  }
   return c - 273 as Kelvin;
 }
 (f: Fahrenheit): Kelvin {
   return *Kelvin {
     e: Error {
-        return 0 as Kelvin
+        return 0 as Kelvin;
     }
   };
 }

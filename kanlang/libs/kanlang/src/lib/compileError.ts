@@ -33,3 +33,23 @@ export class CompileError implements Error {
     return this.msg;
   }
 }
+
+export class CompileErrors implements Error {
+  constructor(public errors: CompileError[], private tokens: Token[]) {
+    this.name = CompileError.name;
+  }
+  get message(): string {
+    return this.errors
+      .map((e) => {
+        const line = this.tokens
+          .filter((token) => token.position.line === e.lineNumber)
+          .map((t) => t.value)
+          .join(' ');
+        const linum = (e.lineNumber + '    ').substring(0, 4);
+        return `${linum} | ${line} \n ${e.message}`;
+      })
+      .join('\n\n');
+  }
+  stack?: string;
+  name = CompileError.name;
+}

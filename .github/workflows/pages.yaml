@@ -9,7 +9,7 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -49,3 +49,53 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 19
+        uses: actions/setup-node@v2
+        with:
+          node-version: 19
+      - name: npm install and build
+        run: |
+          cd kanlang
+          npm install
+          npx nx build kanlang
+          npx nx build compiler
+          npx nx build lsp-server
+          npx nx build lsp
+          npx nx package compiler
+          npm run package-lsp
+      - name: version
+        run: echo "::set-output name=version::$(cat kanlang/package.json | jq .version -r)"
+        id: version
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: releaseNotes/${{ steps.version.outputs.version }}.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: upload vsix artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: kanlang/dist/kanlang-${{ steps.version.outputs.version }}.vsix
+          asset_name: kanlang-${{ steps.version.outputs.version }}.vsix
+          asset_content_type: application/gzip
+      - name: upload compiler binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: kanlang/dist/kanlang
+          asset_name: kanlang
+          asset_content_type: application/gzip

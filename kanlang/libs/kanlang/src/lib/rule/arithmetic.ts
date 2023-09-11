@@ -124,6 +124,20 @@ export class Atom extends Rule {
         },
       },
       {
+        parts: [['operator', '-'], 'number'],
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return '-' + this.tokenValue(1);
+          }
+          toJs(): string {
+            return '-' + this.tokenValue(1);
+          }
+          type(): string {
+            return 'num';
+          }
+        },
+      },
+      {
         parts: [new Variable()],
         treeClass: class extends ParseTree {
           toString(): string {

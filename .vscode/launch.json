@@ -21,7 +21,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/kanlang/dist/apps/lsp"
       ],
-      "trace": "false",
+      "trace": false,
       "internalConsoleOptions": "openOnFirstSessionStart",
       "outFiles": ["${workspaceFolder}/kanlang/dist/apps/lsp"],
       "preLaunchTask": "${defaultBuildTask}"

@@ -14,3 +14,12 @@ So Kanlang is a programing language without function names, and it also lacks fu
 ## Output
 
 This language is not really intended to be used anywhere, but to increase portability I have decided to compile Kanlang horizontally to javascript
+
+## Getting started
+
+Install the vscode extension from the `.vsix` file in the latest [release](https://github.com/munHunger/kanlang/releases).
+
+Download the Kanlang compiler binary from the same place and put it in your path.
+(note that it has only been tested on linux)
+
+Finally I recomend reading the [docs](https://kanlang.wunderdev.com/docs) on how to code in kanlang.

@@ -22,7 +22,7 @@ export function activate(context: ExtensionContext) {
 
   // The server is implemented in node
   const serverModule = context.asAbsolutePath(
-    path.join('..', 'lsp-server', 'server.js')
+    path.join('dist', 'apps', 'lsp-server', 'server.js')
   );
 
   // If the extension is launched in debug mode then the debug server options are used
@@ -39,6 +39,7 @@ export function activate(context: ExtensionContext) {
   const clientOptions: LanguageClientOptions = {
     // Register the server for plain text documents
     documentSelector: [{ scheme: 'file', language: 'kanlang' }],
+    outputChannelName: 'Kanlang LSP',
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),

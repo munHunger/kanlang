@@ -1,3 +1,4 @@
+import { CompileErrors } from './compileError';
 import { State } from './earley';
 import { ParseTree } from './parseTree';
 import { Token } from './tokenizer';
@@ -61,18 +62,7 @@ export class SemanticAnalyzer {
     if (ParseTree.errors.length > 0) {
       if (!parent) {
         //analysis is done
-        throw new Error(
-          ParseTree.errors
-            .map((e) => {
-              const line = tree.allTokens
-                .filter((token) => token.position.line === e.lineNumber)
-                .map((t) => t.value)
-                .join(' ');
-              const linum = (e.lineNumber + '    ').substring(0, 4);
-              return `${linum} | ${line} \n ${e.message}`;
-            })
-            .join('\n\n')
-        ); //FIXME: allow for multiple errors
+        throw new CompileErrors(ParseTree.errors, tree.allTokens);
       }
     }
     return tree;

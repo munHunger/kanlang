@@ -9,6 +9,8 @@ describe('arithmetic', () => {
     '1 - 2 + 3 / 2 * 4'
   );
 
+  testCodeGen('negative numbers are fine', new Arithmetic(), '-1', '-1');
+
   testToString(
     'parses simple additions into an AST',
     new Arithmetic(),
