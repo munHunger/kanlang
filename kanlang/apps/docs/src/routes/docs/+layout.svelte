@@ -22,12 +22,12 @@
 		@apply underline underline-offset-4 text-gray-500;
 	}
 	:global(code) {
-		@apply text-gray-700 bg-gray-100 px-1 -mx-1;
+		@apply text-gray-700 bg-gray-100 px-1  overflow-auto;
 	}
 	.content {
 		@apply p-8 text-gray-600 max-w-5xl my-32 flex-1;
 	}
 	.wrapper {
-		@apply flex flex-col items-center;
+		@apply flex flex-col items-center mx-12 flex-1 overflow-auto;
 	}
 </style>
