@@ -99,10 +99,10 @@ A rule can have multiple return types, such as
 
 ```kanlang
 (k: Kelvin): Celsius | Error {
-	if k { //TODO: don't support comparators at the moment
-		return 0 as Error
+	if k < 0 {
+		return "must be larger than 0" as Error;
 	}
-	return k + 273.15 as Celsius
+	return k + 273.15 as Celsius;
 }
 ```
 
