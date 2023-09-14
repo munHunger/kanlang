@@ -9,8 +9,16 @@ import { Token } from './tokenizer';
 export class Transformation {
   constructor(public from: string[], public to: string[]) {}
 
+  private safePart(part: string): string {
+    return part.replace(/\[/g, 'Array_').replace(/\]/g, '');
+  }
+
   get functionName(): string {
-    return [...this.from, '_', ...this.to].join('_');
+    return [
+      ...this.from.map(this.safePart),
+      '_',
+      ...this.to.map(this.safePart),
+    ].join('_');
   }
 }
 const primitives = ['num', 'boolean', 'string'];
@@ -24,6 +32,7 @@ export class TransformationTree {
   toJs(): string[] {
     if (this.declaration) return [this.declaration.name];
     if (this.transformation) {
+      if (this.children.includes(undefined)) return []; //this means one or more arguments can't be found
       const children = this.children.map((child) => child.toJs()).flat();
       return [this.transformation.functionName + `(${children.join(', ')})`]; //TODO: handle variable
     }
@@ -95,6 +104,17 @@ export class ParseTree {
     );
   }
 
+  getSuperTypeOfMatching(
+    type: string,
+    filter: (type: string) => boolean
+  ): string {
+    const declaration = this.getDeclaration(type);
+    if (filter(type)) return type;
+    if (declaration && declaration.type?.alias) {
+      return this.getSuperTypeOfMatching(declaration.type.alias, filter);
+    }
+  }
+
   isArrayType(type: string): boolean {
     return /^\[.+\]$/.test(type);
   }
@@ -152,7 +172,7 @@ export class ParseTree {
   ): TransformationTree {
     const varInScope = this.getAllDeclarationsInScope()
       .filter((v) => v.variable && blockVariable != v.name)
-      .find((v) => v.variable.type === type);
+      .find((v) => this.varIsOfType(v.name, type));
     if (varInScope) {
       return new TransformationTree(undefined, varInScope);
     }
@@ -185,11 +205,9 @@ export class ParseTree {
         }
       });
     if (root.children.length == 0) {
-      console.log(
-        'got no children for ' + type,
-        this.getDeclaration(type),
-        this.printScope()
-      );
+      //This isn't really an error we can't recover from
+      // console.log(`got no children for ${type}\n${this.printScope()}\n\n`);
+      return undefined;
     }
     return root;
   }
@@ -205,14 +223,17 @@ export class ParseTree {
   varIsOfType(variable: string, type: string): boolean {
     const d = this.getDeclaration(variable);
     if (!d) return false;
-    else if (d.variable && d.variable.type === type) {
-      return true;
+    else if (d.variable) {
+      if (d.variable.type === type) {
+        return true;
+      } else {
+        const t = this.getDeclaration(d.variable.type);
+        if (t) {
+          return this.varIsOfType(t.name, type);
+        }
+      }
     } else if (d.type && d.type.alias == type) {
       return true;
-    }
-    const t = this.getDeclaration(d.variable.type);
-    if (t) {
-      return this.varIsOfType(t.name, type);
     }
   }
 
@@ -235,10 +256,16 @@ export class ParseTree {
   }
 
   //TODO: can we merge these two?
-  getParentOfType(c: typeof Rule): ParseTree | undefined {
+  getParentOfType(
+    c: typeof Rule,
+    stoppingRule?: typeof ParseTree
+  ): ParseTree | undefined {
+    if (stoppingRule && this instanceof stoppingRule) {
+      return undefined;
+    }
     if (this.parent) {
       if (this.parent.rule instanceof c) return this.parent;
-      else return this.parent.getParentOfType(c);
+      else return this.parent.getParentOfType(c, stoppingRule);
     }
   }
   getParentOfTypeString(c: string): ParseTree | undefined {
@@ -263,7 +290,7 @@ export class ParseTree {
           .filter(
             (c) => stoppingRule == undefined || !(c instanceof stoppingRule)
           )
-          .map((child) => child.getChildrenOfType(c))
+          .map((child) => child.getChildrenOfType(c, stoppingRule))
           .flat()
       )
       .map((child) => child as T);
@@ -306,6 +333,10 @@ export class ParseTree {
     return '';
   }
 
+  addToChildScope(declaration: Declaration) {
+    this.scope[declaration.name] = declaration;
+  }
+
   addToScope(declaration: Declaration, unsafe = false) {
     if (this.getDeclaration(declaration.name)) {
       if (!unsafe) {
@@ -317,6 +348,14 @@ export class ParseTree {
       this.scope[declaration.name] = declaration;
     } else {
       this.parent.scope[declaration.name] = declaration;
+    }
+  }
+
+  removeFromScope(name: string) {
+    if (!this.parent) {
+      delete this.scope[name];
+    } else {
+      delete this.parent.scope[name];
     }
   }
 
@@ -360,6 +399,9 @@ export class ParseTree {
   }
 
   validateIfTypeIsDefined(type: string) {
+    if (this.isArrayType(type)) {
+      type = this.unNestArrayType(type); //A bit afraid of the implications of this one, but in theory an array of a type is not a new type
+    }
     if (primitives.includes(type)) return; //Primitive types
     const declaration = this.getDeclaration(type);
     if (!declaration) {
@@ -370,9 +412,9 @@ export class ParseTree {
         });
         return this.validateIfTypeIsDefined(type);
       }
-      const allDeclarations = this.getAllDeclarationsInScope().map(
-        (d) => d.name
-      );
+      const allDeclarations = this.getAllDeclarationsInScope()
+        .filter((v) => v.type)
+        .map((d) => d.name);
       const close = allDeclarations
         .sort(
           (a, b) => levenshteinDistance(a, type) - levenshteinDistance(b, type) //TODO: pre-compute this as it is really slow

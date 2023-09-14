@@ -80,6 +80,29 @@ export class ExpressionPart extends Rule {
         },
       },
       {
+        parts: [
+          this,
+          ['keyword', 'as'],
+          ['punct', '['],
+          'identifier',
+          ['punct', ']'],
+        ],
+        treeClass: class extends ParseTree {
+          toJs(): string {
+            return this.children[0].toJs(); //no types in js so no need to convert
+          }
+          type(): string {
+            return `[${this.tokenValue(3)}]`;
+          }
+          toString(): string {
+            return `(${this.children[0].toString()} as ${this.type()})`;
+          }
+          validate(): void {
+            this.validateIfTypeIsDefined(this.type());
+          }
+        },
+      },
+      {
         parts: [new Arithmetic()],
         invisibleNode: true,
       },

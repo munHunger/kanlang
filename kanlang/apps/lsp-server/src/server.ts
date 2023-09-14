@@ -19,8 +19,9 @@ import {
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { TokenizerError, compile } from '@kanlang/kanlang';
+import { Token, TokenizerError, compile } from '@kanlang/kanlang';
 import { CompileError, CompileErrors } from 'libs/kanlang/src/lib/compileError';
+import { ParseTree } from 'libs/kanlang/src/lib/parseTree';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -33,6 +34,8 @@ let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
+let compiled: { tokens: Token[]; sem: ParseTree; out: string };
+
 export async function validateTextDocument(
   textDocument: TextDocument
 ): Promise<void> {
@@ -40,7 +43,7 @@ export async function validateTextDocument(
 
   const diagnostics: Diagnostic[] = [];
   try {
-    compile(text);
+    compiled = compile(text);
   } catch (e) {
     if (e instanceof TokenizerError) {
       const diagnostic: Diagnostic = {
@@ -300,22 +303,34 @@ connection.onDidChangeWatchedFiles((_change) => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-  (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    // The pass parameter contains the position of the text document in
-    // which code complete got requested. For the example we ignore this
-    // info and always provide the same completion items.
-    return [
-      {
-        label: 'TypeScript',
-        kind: CompletionItemKind.Text,
-        data: 1,
-      },
-      {
-        label: 'JavaScript',
-        kind: CompletionItemKind.Text,
-        data: 2,
-      },
-    ];
+  (cursor: TextDocumentPositionParams): CompletionItem[] => {
+    // const cursorToken = compiled.tokens.find(
+    //   (token) =>
+    //     token.position.line == cursor.position.line &&
+    //     cursor.position.character >= token.position.character &&
+    //     cursor.position.character <
+    //       token.position.character + token.value.length
+    // );
+    // if (cursorToken && cursorToken.type == 'identifier') {
+    //   connection.console.log(
+    //     `searching for tree at ${cursorToken.start}: ${cursorToken.value}`
+    //   );
+    //   const tree = compiled.sem.getChildStartingOnToken(cursorToken);
+    //   if (tree) {
+    //     const declarations = tree.getAllDeclarationsInScope(); //TODO: this is brutally slow
+    //     return declarations.map((d) => ({
+    //       label: d.name,
+    //       kind: d.type ? CompletionItemKind.Function : CompletionItemKind.Field,
+    //     }));
+    //   } else {
+    //     connection.console.log(
+    //       `could not find tree at ${cursorToken.start}: ${
+    //         cursorToken.value
+    //       }. ${compiled.sem.printScope()}`
+    //     );
+    //   }
+    // }
+    return [];
   }
 );
 

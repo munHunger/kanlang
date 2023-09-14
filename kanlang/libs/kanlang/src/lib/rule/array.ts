@@ -6,6 +6,23 @@ export class ArrayRule extends Rule {
   get rules(): NewRuleType[] {
     return [
       {
+        parts: [
+          ['punct', '['],
+          ['punct', ']'],
+        ], //creation
+        treeClass: class extends ParseTree {
+          toString(): string {
+            return `[]`;
+          }
+          toJs(): string {
+            return `[]`;
+          }
+          type(): string {
+            return `[]`;
+          }
+        },
+      },
+      {
         parts: [['punct', '['], new ArrayData(), ['punct', ']']], //creation
         treeClass: class extends ParseTree {
           toString(): string {
@@ -98,12 +115,20 @@ export class ArrayData extends Rule {
             return `destruct ${this.children[0].toString()}`;
           }
           validate(): void {
-            if (!this.isArrayType(this.children[0].type())) {
+            if (
+              !this.getSuperTypeOfMatching(this.children[0].type(), (type) =>
+                this.isArrayType(type)
+              )
+            ) {
               this.addError(`expression is not an array`);
             }
           }
           type(): string {
-            return this.unNestArrayType(this.children[0].type());
+            return this.unNestArrayType(
+              this.getSuperTypeOfMatching(this.children[0].type(), (type) =>
+                this.isArrayType(type)
+              )
+            );
           }
         },
       },

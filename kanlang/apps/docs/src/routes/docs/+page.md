@@ -15,7 +15,15 @@ The shortest way to describe what Kanlang is without introducing any new concept
 
 ## Installing
 
-_TODO: write install instructions_
+Install the vscode extension from the `.vsix` file in the [latest release](https://github.com/munHunger/kanlang/releases).
+
+Download the [Kanlang compiler binary](https://github.com/munHunger/kanlang/releases) from the same place and put it in your path. (note that it has only been tested on linux)
+
+It is then as simple as running this in your terminal.
+
+```bash
+kanlang file.kan && node file.kan.js
+```
 
 If you prefer to try it before downloading you can have a look at the [web editor](/web)
 
@@ -238,6 +246,23 @@ b := *NumericString as SuffixString;
 c := *StringConcat as LogMsg; *LogResult; //prints "Hello42"
 ```
 
+Getting the length of a string is pretty straightforwards.
+
+```kanlang
+a := "Hello World" to StringLength;
+//a = 11. of course the same can be done without targeting a
+```
+
+If you need to iterate over parts of a string you can first split it.
+
+```kanlang
+a := "hello world";
+b := " " as SplitOperator;
+for w in *[SubString] {
+    msg := w as LogMsg; *LogResult; //prints "hello" and then "world"
+}
+```
+
 ## Arrays
 
 There is some support for arrays in kanlang.
@@ -246,6 +271,18 @@ You can create them in a pretty straightforwards fashion.
 
 ```kanlang
 numbers := [1, 2, 3, 4, 5, 6];
+```
+
+You can create empty arrays.
+
+```kanlang
+arr := [];
+```
+
+but the type system will be confused. So it should be cast to a type.
+
+```kanlang
+arr := [] as [num];
 ```
 
 And you can extract data from it
@@ -278,3 +315,17 @@ for i in [1,2,3,4,5] {
 	sum = sum + i;
 }
 ```
+
+## File system
+
+This part will not work if you intend to run the output in the browser.
+But if you run it on a desktop javascript runtime such as node, then this should allow you to read a file.
+
+```kanlang
+path := "/tmp/kanlang.test" as FilePath;
+msg := *FileContent as LogMsg; *LogResult;
+```
+
+## Examples
+
+At current time there isn't a lot of example code, but you can take a look in the [example folder](https://github.com/munHunger/kanlang/tree/main/examples) of the repository.

@@ -34,7 +34,11 @@ export class If extends Rule {
     ];
   }
 }
-
+export class ForTree extends ParseTree {
+  get iteratorName(): string {
+    return '';
+  }
+}
 export class For extends Rule {
   get rules(): NewRuleType[] {
     return [
@@ -48,22 +52,31 @@ export class For extends Rule {
           new Body(),
           ['punct', '}'],
         ],
-        treeClass: class extends ParseTree {
+        treeClass: class extends ForTree {
           toJs(): string {
-            return `for (let ${this.tokenValue(
-              1
-            )} in ${this.children[0].toJs()}) {${
+            return `for (let ${
+              this.iteratorName
+            } of ${this.children[0].toJs()}) {${
               this.children[1]?.toJs() || '/*empty-body*/'
             }}`;
+          }
+
+          get iteratorName(): string {
+            return this.tokenValue(1);
           }
 
           postChildAdded(): void {
             //Add identifier only after the array expression has been added (before the body is run)
             if (this.children.length == 1) {
               this.addToScope({
-                name: this.tokenValue(1),
+                name: this.iteratorName,
                 variable: {
-                  type: this.unNestArrayType(this.children[0].type()),
+                  type: this.unNestArrayType(
+                    this.getSuperTypeOfMatching(
+                      this.children[0].type(),
+                      this.isArrayType
+                    )
+                  ),
                   constant: false,
                 },
               });
@@ -71,7 +84,12 @@ export class For extends Rule {
           }
 
           validate(): void {
-            if (!this.isArrayType(this.children[0].type())) {
+            if (
+              !this.getSuperTypeOfMatching(
+                this.children[0].type(),
+                this.isArrayType
+              )
+            ) {
               this.addError(
                 'expression is not of type array. Received ' +
                   this.children[0].type()
