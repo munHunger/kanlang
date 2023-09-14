@@ -51,7 +51,7 @@ export class BooleanRule extends Rule {
           }
         },
       },
-      ...['==', '<=', '>=', '<', '>'].map(
+      ...['==', '!=', '<=', '>=', '<', '>'].map(
         (operator) =>
           ({
             parts: [new Expression(), ['operator', operator], new Expression()],

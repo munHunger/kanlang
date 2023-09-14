@@ -78,7 +78,8 @@ export class Variable extends Rule {
             return `${this.tokenValue(0)}`;
           }
           validate(): void {
-            if (!this.getDeclaration(this.getName())) {
+            const declaration = this.getDeclaration(this.getName());
+            if (!declaration) {
               const didYouMean = this.getAllDeclarationsInScope()
                 .map((v) => [levenshteinDistance(this.getName(), v.name), v])
                 .filter((v) => v[0] < 2)
@@ -87,6 +88,8 @@ export class Variable extends Rule {
                 `variable ${this.getName()} is not defined.` +
                   (didYouMean ? `\ndid you mean '${didYouMean[1].name}'` : '')
               );
+            } else if (!declaration.variable) {
+              this.addError(`${this.getName()} is not refering to a variable`);
             }
           }
           getName(): string {

@@ -49,6 +49,70 @@ type Kelvin alias num
     /.*covered.*all cases.*/
   );
 
+  describe('nested', () => {
+    testCodeGen(
+      'type request in control statement',
+      new Main(),
+      `
+        type Inc alias num
+        (a: num): Inc { return a + 1 as Inc; }
+        (): SysCode {
+          for i in [1,2,3,4,5] {
+            b := *Inc;
+          }
+          return true as SysCode;
+        }
+        `,
+      [
+        'function num___Inc(a){',
+        'return a + 1;}',
+        'function __SysCode(){',
+        'for (let i of [1,2,3,4,5]) {',
+        'let b = num___Inc(i);};',
+        'return true;}',
+        '__SysCode();',
+      ].join('\n')
+    );
+    testCodeGen(
+      'type request with catch in control statement',
+      new Main(),
+      `
+        type Error alias string
+        type Inc alias num
+        (a: num): Inc | Error { 
+          if a < 0 { return "less than 0" as Error; }
+          return a + 1 as Inc; }
+        (): SysCode {
+          for i in [1,2,3,4,5] {
+            b := *Inc {
+              e: Error {
+                return false as SysCode;
+              }
+            };
+          }
+          return true as SysCode;
+        }
+        `,
+      [
+        'function num___Inc_Error(a){',
+        'if (a < 0) {return {Error: "less than 0"};};',
+        'return {Inc: a + 1};}',
+        'function __SysCode(){',
+        'for (let i of [1,2,3,4,5]) {',
+        'let ___Inc = num___Inc_Error(i);',
+        'if(!___Inc.Inc) {',
+        'if(___Inc.Error) {',
+        'let e = ___Inc.Error;',
+        'return false;',
+        '}',
+        '}',
+        'let b = ___Inc.Inc;};',
+        'return true;}',
+        '__SysCode();',
+      ].join('\n')
+    );
+  });
+
   testCodeGen(
     'can request when there are multiple return types if that is handled',
     new Main(),
@@ -138,6 +202,123 @@ type Kelvin alias num
     }
   `,
     /.*no possible path.*Kelvin.*/
+  );
+  testThrows(
+    'throws errors when there is no path to fully transform',
+    new Main(),
+    `
+    type Celsius alias num
+    type Fahrenheit alias num
+    type Kelvin alias num
+    (f: Fahrenheit): Kelvin {
+      return f + 1 as Kelvin;
+    }
+    (): num {
+      a := 0 as Celsius;
+      return *Kelvin + 1;
+    }
+  `,
+    /.*Cannot find a transformation path to 'Kelvin'.*/
+  );
+  testCodeGen(
+    `doesn't use the catch variables to request`,
+    new Main(),
+    `
+    type Kelvin alias num
+    type Error alias string
+    (a: string): Kelvin | Error {
+      if a == "" {
+        return "" as Error;
+      }
+      return 0 as Kelvin;
+    }
+    (): SysCode {
+      v := "hello";
+      *Kelvin {
+        e: Error {
+          return false as SysCode;
+        }
+      };
+      return true as SysCode;
+    }
+  `,
+    `function string___Kelvin_Error(a){
+      if (a == "") {return {Error: ""};};
+      return {Kelvin: 0};}
+      function __SysCode(){
+      let v = "hello";
+      let ___Kelvin = string___Kelvin_Error(v);
+      if(!___Kelvin.Kelvin) {
+      if(___Kelvin.Error) {
+      let e = ___Kelvin.Error;
+      return false;
+      }
+      }
+      ___Kelvin.Kelvin;
+      return true;}
+      __SysCode();`
+  );
+  testCodeGen(
+    'can transform when there is a supertype in scope',
+    new Main(),
+    `
+    type Celsius alias num
+    type NonNegative alias num
+    (n: num): NonNegative {
+      if n > 0 {
+        return n as NonNegative;
+      }
+      return 0 as NonNegative;
+    }
+    (): SysCode {
+      c := 14 as Celsius;
+      n := *NonNegative;
+      return true as SysCode;
+    }
+  `,
+    `function num___NonNegative(n){
+      if (n > 0) {return n;};
+      return 0;}
+      function __SysCode(){
+      let c = 14;
+      let n = num___NonNegative(c);
+      return true;}
+      __SysCode();`
+      .split('\n')
+      .map((l) => l.trim())
+      .join('\n')
+  );
+  testCodeGen(
+    'does not ignore iterator when inside body',
+    new Main(),
+    `
+    type NonNegative alias num
+    (n: num): NonNegative {
+      if n > 0 {
+        return n as NonNegative;
+      }
+      return 0 as NonNegative;
+    }
+    (): SysCode {
+      for v in [1,2,3] {
+        if *NonNegative != v {
+          return false as SysCode;
+        }
+      }
+      return true as SysCode;
+    }
+  `,
+    `function num___NonNegative(n){
+      if (n > 0) {return n;};
+      return 0;}
+      function __SysCode(){
+      for (let v of [1,2,3]) {
+      if (num___NonNegative(v) != v) {return false;};};
+      return true;}
+      __SysCode();`
+      .split('\n')
+      .map((l) => l.trim())
+      .join('\n')
   );
   testCodeGen(
     'Can explicitly ask for type conversion (js)',

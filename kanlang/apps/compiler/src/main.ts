@@ -31,7 +31,16 @@ if (argArray.length === 0) {
     );
   } else {
     const src = fs.readFileSync(argArray[0], 'utf-8');
-    fs.writeFileSync(argArray[0] + '.js', compile(src).out);
+    try {
+      fs.writeFileSync(argArray[0] + '.js', compile(src).out);
+    } catch (error) {
+      console.log(
+        error.map((e) => {
+          const { token, stack, ...rest } = e;
+          return rest;
+        })
+      );
+    }
   }
 }
 

@@ -1,7 +1,9 @@
 import { ParseTree } from '../parseTree';
-import { Body } from './body';
+import { Body, BodyTree } from './body';
+import { For, ForTree } from './control';
 import { Expression, ExpressionPart } from './expression';
 import { NewRuleType, Rule } from './rule';
+import { Type } from './typeDef';
 import { VariableAssignment, VariableTree } from './variable';
 
 export class TypeRequestTree extends ParseTree {
@@ -16,6 +18,7 @@ export class TypeRequestTree extends ParseTree {
   }
   getHoistJs(): string {
     const variable = this.getParentOfType(VariableAssignment) as VariableTree;
+    const loop = this.getParentOfType(For, BodyTree) as ForTree;
 
     let hoist = [];
     const p = this.getChildrenOfType<VariableTree>(VariableTree);
@@ -27,9 +30,12 @@ export class TypeRequestTree extends ParseTree {
     }
     const catchTree = this.getCatch();
     if (catchTree) {
-      hoist.push(`\nlet ___${this.type()} = ${
-        this.getTransformationPath(this.type(), variable?.getName()).toJs()[0]
-      };
+      hoist.push(`\nlet ___${this.type()} = ${this.getTransformationPath(
+        this.type(),
+        variable?.getName() || loop?.iteratorName
+      )
+        .toJs()
+        .join(' || ')};
       if(!___${this.type()}.${this.type()}) {
         ${catchTree
           .getCatchVars()
@@ -47,10 +53,13 @@ export class TypeRequestTree extends ParseTree {
   }
   validate(): void {
     const variable = this.getParentOfType(VariableAssignment) as VariableTree;
+    const loop = this.getParentOfType(For, BodyTree) as ForTree;
     this.validateIfTypeIsDefined(this.type());
     if (
-      this.getTransformationPaths(this.type(), variable?.getName()).children
-        .length == 0
+      this.getTransformationPaths(
+        this.type(),
+        variable?.getName() || loop?.iteratorName
+      ).children.length == 0
     ) {
       this.addError(`no possible path to transform to ${this.type()}`);
     }
@@ -64,28 +73,29 @@ export class TypeRequest extends Rule {
         parts: [
           new ExpressionPart(),
           ['keyword', 'to'],
-          'identifier',
+          new Type(),
           new TypeRequestCatch(),
         ],
         treeClass: class extends TypeRequestTree {
           getCatch(): TypeRequestCatchTree {
-            return this.children[1] as TypeRequestCatchTree;
+            return this.children[2] as TypeRequestCatchTree;
           }
           getExpression(): ParseTree {
             return this.children[0];
           }
           type(): string {
-            return this.tokenValue(2);
+            return this.children[1].toString();
           }
           toString(): string {
             return `${this.children[0].toString()} transformed to ${this.type()} ${
-              this.children[1]?.toString() || ''
+              this.children[2]?.toString() || ''
             }`;
           }
           toJs(): string {
             const variable = this.getParentOfType(
               VariableAssignment
             ) as VariableTree;
+            const loop = this.getParentOfType(For, BodyTree) as ForTree;
 
             const p = this.getChildrenOfType<VariableTree>(VariableTree);
             if (this.getCatch()) return `___${this.type()}.${this.type()}`;
@@ -93,7 +103,7 @@ export class TypeRequest extends Rule {
               //TODO: handle when there are multiple, ex: a + b
               return this.getTransformationPaths(
                 this.type(),
-                variable?.getName()
+                variable?.getName() || loop?.iteratorName
               )
                 .filterIncludeVariable({ name: p[0].getName() })
                 .toJs2()
@@ -117,40 +127,60 @@ export class TypeRequest extends Rule {
           }
           validate(): void {
             super.validate();
+            //TODO: shouldn't this be validated?
             this.mergeParentScope(); //not sure about this one, but seems to be working
           }
         },
       },
       {
-        parts: [['operator', '*'], 'identifier', new TypeRequestCatch()],
+        parts: [['operator', '*'], new Type(), new TypeRequestCatch()],
         treeClass: class extends TypeRequestTree {
           getCatch(): TypeRequestCatchTree {
-            return this.children[0] as TypeRequestCatchTree;
+            return this.children[1] as TypeRequestCatchTree;
           }
           toJs(): string {
+            const loop = this.getParentOfType(For, BodyTree) as ForTree;
+            const variable = this.getParentOfType(
+              VariableAssignment
+            ) as VariableTree;
             if (this.getCatch()) return `___${this.type()}.${this.type()}`;
-            else return this.getTransformationPath(this.type()).toJs()[0];
+            else
+              return this.getTransformationPath(
+                this.type(),
+                variable?.getName() || loop?.iteratorName
+              )
+                .toJs()
+                .join(' || ');
           }
           type(): string {
-            return this.tokenValue(1);
+            return this.children[0].toString();
           }
           toString(): string {
-            return `${this.tokenValue(1)} fetched from scope ${
-              this.children[0]?.toString() || ''
+            return `${this.type()} fetched from scope ${
+              this.children[1]?.toString() || ''
             }`;
           }
           validate(): void {
             super.validate();
-            const path = this.getTransformationPath(this.type());
-            if (path.toJs().length == 0) {
+            const loop = this.getParentOfType(For, BodyTree) as ForTree;
+            const variable = this.getParentOfType(
+              VariableAssignment
+            ) as VariableTree;
+            const path = this.getTransformationPath(
+              this.type(),
+              variable?.getName() || loop?.iteratorName
+            );
+            if (path == undefined || path.toJs().length == 0) {
               this.addError(
-                'Cannot find a transformation path to ' + this.type()
+                `Cannot find a transformation path to '${this.type()}'. blocked vars ${
+                  variable?.getName() || loop?.iteratorName
+                }`
               );
             } else {
               const possibleOutputs = path.children
                 .filter((child) => child.transformation)
                 .map((child) => child.transformation.to);
-              const catchTree = this.children[0] as TypeRequestCatchTree;
+              const catchTree = this.children[1] as TypeRequestCatchTree;
               if (catchTree) {
                 //TODO: check if the correct cases are covered
               } else if (possibleOutputs.every((output) => output.length > 1))
@@ -191,9 +221,6 @@ export class TypeRequestCatch extends Rule {
           ['punct', '}'],
         ],
         treeClass: class extends TypeRequestCatchTree {
-          validate(): void {
-            this.validateIfTypeIsDefined(this.type());
-          }
           getCatchVars(): { name: string; type: string }[] {
             return [
               {
@@ -214,8 +241,11 @@ export class TypeRequestCatch extends Rule {
           type(): string {
             return this.tokenValue(3);
           }
+          validate(): void {
+            this.validateIfTypeIsDefined(this.type());
+          }
           preValidate(): void {
-            this.addToScope({
+            this.addToChildScope({
               name: this.tokenValue(1),
               variable: {
                 constant: false,

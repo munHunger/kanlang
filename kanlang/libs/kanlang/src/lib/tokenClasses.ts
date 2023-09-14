@@ -22,7 +22,9 @@ export const keyword: TokenClass = {
   patterns: [
     {
       tmClass: 'keyword.control.kanlang',
-      match: new RegExp('(if|else|for|while|return|let|type|alias|as|in|to)'),
+      match: new RegExp(
+        '(if|else|for|while|return|let|type|alias|as|in|to)(?=\\s|$)'
+      ),
     },
   ],
 };

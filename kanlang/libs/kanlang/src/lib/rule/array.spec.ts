@@ -3,9 +3,11 @@ import { ArrayRule } from './array';
 import { Body } from './body';
 import { Expression } from './expression';
 import { Function } from './function';
+import { Main } from './main';
 
 describe('arrays', () => {
   describe('creating arrays', () => {
+    testToString('can create empty arrays', new ArrayRule(), '[]', '[]');
     testToString(
       'it handles single number value arrays',
       new ArrayRule(),
@@ -17,6 +19,12 @@ describe('arrays', () => {
       new ArrayRule(),
       '["hello"]',
       '["hello"]'
+    );
+    testToString(
+      'it can create variable arrays',
+      new Expression(),
+      'a := [1] as [num]',
+      'a := ([1] as [num]) [a: [num]]'
     );
     testToString(
       'it handles arrays of arbitrary length',
@@ -47,10 +55,27 @@ describe('arrays', () => {
   });
   describe('destructing array', () => {
     testCodeGen(
-      'can join data via destructuring',
+      'can join data via destructuring (prefix)',
       new ArrayRule(),
       '[1, ...[2,3,4]]',
       '[1,...[2,3,4]]'
+    );
+    testCodeGen(
+      'can join data via destructuring (suffix)',
+      new ArrayRule(),
+      '[...[2,3,4], 1]',
+      '[...[2,3,4],1]'
+    );
+    testCodeGen(
+      'can join data to type aliased array',
+      new Main(),
+      `
+      type Bag alias [string]
+      (a: Bag): Bag {
+        return [...a, "hello"] as Bag;
+      }
+      `,
+      ['function Bag___Bag(a){', 'return [...a,"hello"];}'].join('\n')
     );
   });
   describe('single value', () => {

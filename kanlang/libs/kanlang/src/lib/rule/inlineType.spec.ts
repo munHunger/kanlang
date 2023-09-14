@@ -13,4 +13,10 @@ describe('inline type', () => {
     'Celsius alias num',
     '{Celsius is num}'
   );
+  testToString(
+    'Can define an inline alias an array',
+    new InlineType(),
+    'Celsius alias [num]',
+    '{Celsius is [num]}'
+  );
 });

@@ -29,7 +29,12 @@ export function testCodeGen(
         .map((l) => l.trim())
         .filter((v) => v)
         .join('\n')
-    ).toEqual(expected)
+    ).toEqual(
+      expected
+        .split('\n')
+        .map((l) => l.trim())
+        .join('\n')
+    )
   );
 }
 
@@ -82,7 +87,7 @@ export function testNoThrows(
 export function testCodeOutput(
   message: string,
   input: string,
-  expected: string
+  expected: string | string[]
 ) {
   it(message, () => {
     const parser = new EarleyParser(new Main());
@@ -93,7 +98,11 @@ export function testCodeOutput(
     console.log = jest.fn();
 
     eval(code);
-    expect((console.log as any).mock.calls[0][0]).toBe(expected);
+    if (Array.isArray(expected)) {
+      expect((console.log as any).mock.calls.flat()).toEqual(expected);
+    } else {
+      expect((console.log as any).mock.calls[0][0]).toBe(expected);
+    }
   });
 }
 

@@ -40,6 +40,56 @@ export class StringConcat extends Builtin {
   }
 }
 
+export class StringLength extends Builtin {
+  getTypes(): Declaration[] {
+    return [
+      {
+        name: 'StringLength',
+        type: {
+          alias: 'num',
+        },
+      },
+    ];
+  }
+  getTransformation(): Transformation {
+    return new Transformation(['string'], ['StringLength']);
+  }
+
+  getImpl(): string {
+    return `function ${
+      this.getTransformation().functionName
+    }(a) { return a.length }`;
+  }
+}
+
+export class Split extends Builtin {
+  getTypes(): Declaration[] {
+    return [
+      {
+        name: 'SubString',
+        type: {
+          alias: 'string',
+        },
+      },
+      {
+        name: 'SplitOperator',
+        type: {
+          alias: 'SubString',
+        },
+      },
+    ];
+  }
+  getTransformation(): Transformation {
+    return new Transformation(['string', 'SplitOperator'], ['[SubString]']);
+  }
+
+  getImpl(): string {
+    return `function ${
+      this.getTransformation().functionName
+    }(a, b) { return a.split(b) }`;
+  }
+}
+
 export class NumToString extends Builtin {
   getTypes(): Declaration[] {
     return [
